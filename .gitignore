@@ -1,0 +1,24 @@
+# Sauvegardes et archives de déploiement
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+*.bak
+*.backup
+
+# Données locales et secrets
+.env
+.env.*
+*.local
+*.log
+
+# Fichiers temporaires
+.*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# Dépendances et rapports générés
+node_modules/
+vendor/
+coverage/

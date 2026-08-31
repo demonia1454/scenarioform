@@ -1,0 +1,23 @@
+{
+    "id": "scenarioform",
+    "name": "ScenarioForm",
+    "description": "Exécution de scénarios Jeedom depuis des formulaires personnalisables.",
+    "author": "kirk",
+    "require": "4.6",
+    "category": "organization",
+    "hasDependency": false,
+    "hasOwnDeamon": false,
+    "language": [
+        "fr_FR"
+    ],
+    "compatibility": [
+        "4.6"
+    ],
+    "display": "scenarioform",
+    "mobile": false,
+    "changelog": "CHANGELOG.md",
+    "documentation": "index.php?v=d&m=scenarioform&p=documentation",
+    "link": {
+        "forum": ""
+    }
+}

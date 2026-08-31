@@ -1,0 +1,801 @@
+.scenarioform-app {
+    --sf-accent: var(--al-info-color, #337ab7);
+    --sf-success: var(--al-success-color, #3c8c40);
+    --sf-danger: var(--al-danger-color, #c83c3c);
+    --sf-border: rgba(127, 127, 127, .25);
+    --sf-muted: rgba(127, 127, 127, .82);
+    --sf-surface: rgba(127, 127, 127, .055);
+    --sf-radius: 8px;
+    padding-bottom: 24px;
+}
+
+.scenarioform-toolbar {
+    min-height: 44px;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--sf-border);
+}
+
+.scenarioform-toolbar-actions,
+.scenarioform-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.scenarioform-mobile-management-toggle {
+    display: none;
+}
+
+.scenarioform-section-title {
+    margin: 0 0 14px;
+    padding: 0 0 10px;
+    border-bottom: 1px solid var(--sf-border);
+    font-size: 17px;
+    font-weight: 600;
+}
+
+.scenarioform-section-title i {
+    width: 22px;
+    color: var(--sf-accent);
+}
+
+.scenarioform-sidebar {
+    padding-right: 18px;
+    border-right: 1px solid var(--sf-border);
+}
+
+.scenarioform-main {
+    padding-left: 22px;
+}
+
+.scenarioform-workspace {
+    max-width: 1100px;
+}
+
+.scenarioform-request.list-group-item {
+    margin-bottom: 7px;
+    padding: 11px 12px;
+    border: 1px solid var(--sf-border);
+    border-radius: var(--sf-radius);
+    background: transparent;
+    transition: border-color .15s ease, background-color .15s ease, transform .15s ease;
+}
+
+.scenarioform-request.list-group-item:hover,
+.scenarioform-request.list-group-item:focus {
+    border-color: rgba(51, 122, 183, .55);
+    background: var(--sf-surface);
+}
+
+.scenarioform-request.list-group-item.active,
+.scenarioform-request.list-group-item.active:hover,
+.scenarioform-request.list-group-item.active:focus {
+    border-color: var(--sf-accent);
+    background: rgba(51, 122, 183, .08);
+    color: inherit;
+}
+
+.scenarioform-request-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.scenarioform-request small {
+    display: block;
+    overflow: hidden;
+    color: var(--sf-muted);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.scenarioform-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--sf-muted);
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.scenarioform-status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--sf-danger);
+}
+
+.scenarioform-request.is-enabled .scenarioform-status-dot {
+    background: var(--sf-success);
+}
+
+.scenarioform-page-title {
+    margin: 0 0 5px;
+    font-size: 22px;
+    font-weight: 600;
+}
+
+.scenarioform-page-description {
+    max-width: 760px;
+    margin-bottom: 14px;
+    color: var(--sf-muted);
+}
+
+.scenarioform-empty-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    min-height: 150px;
+    padding: 28px;
+    border: 1px dashed var(--sf-border);
+    border-radius: var(--sf-radius);
+    color: var(--sf-muted);
+    text-align: center;
+}
+
+.scenarioform-empty-state i {
+    margin-bottom: 10px;
+    color: var(--sf-accent);
+    font-size: 25px;
+    opacity: .75;
+}
+
+.scenarioform-empty-state strong {
+    margin-bottom: 4px;
+    color: inherit;
+    font-size: 15px;
+}
+
+.scenarioform-empty-state span {
+    font-size: 12px;
+}
+
+.scenarioform-notice {
+    margin: 14px 0;
+    padding: 10px 12px;
+    border-left: 3px solid var(--sf-accent);
+    border-radius: 0 4px 4px 0;
+    background: rgba(51, 122, 183, .08);
+    color: var(--sf-muted);
+}
+
+.scenarioform-notice i {
+    margin-right: 6px;
+    color: var(--sf-accent);
+}
+
+#scenarioform-request-edit {
+    max-width: 780px;
+    padding-top: 4px;
+}
+
+#scenarioform-request-edit .form-group {
+    margin-bottom: 14px;
+}
+
+.scenarioform-card {
+    margin-top: 18px;
+    padding: 16px;
+    border: 1px solid var(--sf-border);
+    border-radius: var(--sf-radius);
+    background: var(--sf-surface);
+}
+
+.scenarioform-card-header {
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.scenarioform-card-header h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.scenarioform-card-header-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+.scenarioform-form-choices {
+    margin: 0;
+}
+
+.scenarioform-form-choice {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 46px;
+    border-color: var(--sf-border);
+    background: transparent;
+}
+
+.scenarioform-form-choice-main {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.scenarioform-form-drag-handle {
+    color: var(--sf-muted);
+    cursor: grab;
+}
+
+.scenarioform-form-choice.is-dragging {
+    opacity: .55;
+}
+
+.scenarioform-form-order-actions {
+    display: flex;
+    flex: 0 0 auto;
+    gap: 3px;
+}
+
+.scenarioform-form-choice:hover,
+.scenarioform-form-choice:focus {
+    background: var(--sf-surface);
+    color: inherit;
+}
+
+.scenarioform-form-choice .text-muted {
+    overflow: hidden;
+    max-width: 55%;
+    text-align: right;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.scenarioform-form-choice.active,
+.scenarioform-form-choice.active:hover,
+.scenarioform-form-choice.active:focus {
+    border-left: 3px solid var(--sf-accent);
+    background: rgba(51, 122, 183, .08);
+    color: inherit;
+}
+
+.scenarioform-form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 12px 0 22px;
+}
+
+.scenarioform-fields-card {
+    max-width: 900px;
+    margin-top: 22px;
+}
+
+.scenarioform-fields-card .scenarioform-card-header i {
+    margin-right: 5px;
+    color: var(--sf-accent);
+}
+
+.scenarioform-fields-table {
+    margin-bottom: 0;
+}
+
+.scenarioform-fields-table > thead > tr > th {
+    padding: 8px;
+    border-bottom: 1px solid var(--sf-border);
+    color: var(--sf-muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .025em;
+}
+
+.scenarioform-fields-table > tbody > tr > td {
+    padding: 7px 8px;
+    border-top: 1px solid var(--sf-border);
+    vertical-align: middle;
+}
+
+.scenarioform-fields-table > tbody > tr:hover {
+    background: rgba(127, 127, 127, .07);
+}
+
+.scenarioform-fields-table code {
+    padding: 2px 5px;
+    border-radius: 3px;
+    background: rgba(127, 127, 127, .12);
+    color: inherit;
+}
+
+.scenarioform-scenario-order-item {
+    display: flex;
+    align-items: center;
+    min-height: 40px;
+    margin: 0;
+    padding: 7px 9px;
+    border-color: var(--sf-border);
+    background: transparent;
+    cursor: move;
+}
+
+#scenarioform-form-scenario-order {
+    overflow-y: auto;
+    max-height: 390px;
+    margin-bottom: 14px;
+    border: 1px solid var(--sf-border);
+    border-radius: var(--sf-radius);
+    background: var(--sf-surface);
+}
+
+.scenarioform-scenario-order-item + .scenarioform-scenario-order-item {
+    border-top: 1px solid var(--sf-border);
+}
+
+.scenarioform-scenario-order-item:has(.form-scenario-enabled:checked) {
+    background: rgba(51, 122, 183, .09);
+}
+
+.scenarioform-scenario-order-item > .fa-grip-vertical {
+    color: var(--sf-muted);
+    opacity: .65;
+}
+
+.scenarioform-scenario-label {
+    flex: 1;
+    margin: 0 10px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.scenarioform-scenario-label input {
+    margin: 0 9px 0 0;
+    vertical-align: middle;
+}
+
+.scenarioform-scenario-order-item .pull-right {
+    display: inline-flex;
+    gap: 3px;
+}
+
+.scenarioform-scenario-order-item .btn {
+    opacity: .58;
+    transition: opacity .15s ease;
+}
+
+.scenarioform-scenario-order-item:hover .btn,
+.scenarioform-scenario-order-item:focus-within .btn {
+    opacity: 1;
+}
+
+.scenarioform-scenario-order-item:focus-within {
+    outline: 2px solid var(--sf-accent);
+    outline-offset: 1px;
+}
+
+.scenarioform-history-item {
+    margin-bottom: 12px;
+    padding: 14px 16px;
+    border: 1px solid var(--sf-border);
+    border-radius: var(--sf-radius);
+    background: var(--sf-surface);
+}
+
+.scenarioform-history-item-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: -2px 0 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--sf-border);
+}
+
+.scenarioform-history-item-header time {
+    color: var(--sf-muted);
+    font-size: 11px;
+}
+
+.scenarioform-history-item .dl-horizontal {
+    display: grid;
+    grid-template-columns: max-content 1fr max-content 1fr;
+    gap: 3px 9px;
+    margin-bottom: 10px;
+}
+
+.scenarioform-history-item .dl-horizontal dt,
+.scenarioform-history-item .dl-horizontal dd {
+    width: auto;
+    margin: 0;
+    padding: 0;
+}
+
+.scenarioform-history-values {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px 18px;
+    margin: 8px 0 12px;
+    padding: 0;
+    list-style: none;
+}
+
+.scenarioform-history-values li {
+    overflow: hidden;
+    padding: 4px 0;
+    border-bottom: 1px solid var(--sf-border);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.scenarioform-history-subtitle {
+    margin-top: 10px;
+    color: var(--sf-muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .025em;
+}
+
+.scenarioform-history-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 12px;
+}
+
+.scenarioform-form-editor {
+    max-width: 820px;
+    padding-top: 4px;
+}
+
+.scenarioform-editor-actions {
+    display: flex;
+    gap: 8px;
+    padding-top: 2px;
+}
+
+.scenarioform-entry-card {
+    max-width: 920px;
+    margin-top: 24px;
+    padding: 18px 20px;
+    border: 1px solid var(--sf-border);
+    border-radius: var(--sf-radius);
+    background: var(--sf-surface);
+}
+
+.scenarioform-entry-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 18px;
+    row-gap: 10px;
+}
+
+.scenarioform-entry-fields > .alert,
+.scenarioform-entry-fields > .form-group:has(textarea),
+.scenarioform-entry-fields > .form-group:has(.checkbox) {
+    grid-column: 1 / -1;
+}
+
+.scenarioform-entry-header {
+    margin-bottom: 16px;
+    padding-bottom: 11px;
+    border-bottom: 1px solid var(--sf-border);
+}
+
+.scenarioform-entry-header h4 {
+    margin: 0 0 4px;
+    font-size: 17px;
+    font-weight: 600;
+}
+
+.scenarioform-entry-header h4 i {
+    margin-right: 6px;
+    color: var(--sf-accent);
+}
+
+.scenarioform-entry-header p {
+    margin: 0;
+    color: var(--sf-muted);
+    font-size: 12px;
+}
+
+.scenarioform-entry-card .form-group {
+    margin-bottom: 0;
+}
+
+.scenarioform-entry-card .form-group > label {
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.scenarioform-entry-card .form-control {
+    min-height: 32px;
+    height: 32px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.scenarioform-entry-card textarea.form-control {
+    height: auto;
+    min-height: 70px;
+}
+
+.scenarioform-entry-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 20px;
+    padding-top: 14px;
+    border-top: 1px solid var(--sf-border);
+}
+
+#scenarioform-history-zone {
+    margin-top: 18px;
+}
+
+.scenarioform-history-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.scenarioform-history-header h4 {
+    margin-top: 0;
+}
+
+#scenarioform-validation-message,
+#scenarioform-history-content {
+    max-width: 920px;
+}
+
+.scenarioform-live-results {
+    max-width: 920px;
+    margin-top: 12px;
+    padding: 14px 16px;
+    border: 1px solid var(--sf-border);
+    border-radius: 4px;
+    background: var(--sf-card-bg, #fff);
+}
+
+.scenarioform-live-results-title {
+    margin-bottom: 8px;
+}
+
+.scenarioform-live-results .scenarioform-history-results {
+    margin-bottom: 0;
+}
+
+
+.scenarioform-history-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 10px 0 12px;
+    color: var(--sf-muted);
+    font-size: 12px;
+}
+
+.scenarioform-field-error {
+    margin-top: 5px;
+}
+
+@media (max-width: 767px) {
+    .scenarioform-app {
+        padding-bottom: 16px;
+        overflow-x: hidden;
+    }
+
+    .scenarioform-toolbar {
+        min-height: 0;
+    }
+
+    .scenarioform-toolbar .pull-right {
+        float: none !important;
+    }
+
+    .scenarioform-toolbar-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        width: 100%;
+    }
+
+    .scenarioform-mobile-management-toggle {
+        display: inline-flex;
+    }
+
+    .scenarioform-mobile-admin-action {
+        display: none !important;
+    }
+
+    .scenarioform-mobile-management-open .scenarioform-mobile-admin-action {
+        display: inline-flex !important;
+    }
+
+    .scenarioform-toolbar-actions .btn,
+    .scenarioform-form-actions .btn,
+    .scenarioform-editor-actions .btn,
+    .scenarioform-entry-actions .btn,
+    .scenarioform-history-actions .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        white-space: normal;
+    }
+
+    .scenarioform-sidebar {
+        padding-right: 15px;
+        padding-bottom: 14px;
+        margin-bottom: 18px;
+        border-right: 0;
+        border-bottom: 1px solid var(--sf-border);
+    }
+
+    .scenarioform-main {
+        padding-left: 15px;
+    }
+
+    .scenarioform-request.list-group-item {
+        min-height: 52px;
+        padding: 13px 12px;
+    }
+
+    .scenarioform-form-choice {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .scenarioform-form-choice .text-muted {
+        max-width: 100%;
+        text-align: left;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    .scenarioform-card,
+    .scenarioform-fields-card {
+        padding: 13px;
+    }
+
+    .scenarioform-card-header {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .scenarioform-form-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .scenarioform-form-actions .btn {
+        width: 100%;
+    }
+
+    .scenarioform-form-actions .scenarioform-danger-action {
+        grid-column: 1 / -1;
+        margin-left: 0;
+        margin-top: 6px;
+    }
+
+    .scenarioform-fields-card .table-responsive {
+        margin-bottom: 0;
+        border: 1px solid var(--sf-border);
+        border-radius: 4px;
+    }
+
+    .scenarioform-fields-table {
+        min-width: 680px;
+    }
+
+    .scenarioform-scenario-order-item {
+        min-height: 52px;
+    }
+
+    .scenarioform-scenario-order-item .btn {
+        min-width: 40px;
+        min-height: 40px;
+        opacity: .82;
+    }
+
+    .scenarioform-editor-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .scenarioform-entry-card {
+        padding: 14px;
+    }
+
+    .scenarioform-entry-fields {
+        grid-template-columns: 1fr;
+    }
+
+    .scenarioform-entry-fields > .form-group {
+        grid-column: 1;
+    }
+
+    .scenarioform-entry-card .form-control {
+        min-height: 44px;
+        height: 44px;
+        font-size: 16px;
+    }
+
+    .scenarioform-entry-card textarea.form-control {
+        min-height: 96px;
+    }
+
+    .scenarioform-entry-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .scenarioform-entry-actions .btn {
+        width: 100%;
+    }
+
+    .scenarioform-history-item {
+        padding: 13px;
+    }
+
+    .scenarioform-history-item-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    .scenarioform-history-values {
+        grid-template-columns: 1fr;
+    }
+
+    .scenarioform-history-values li {
+        overflow: visible;
+        text-overflow: clip;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    .scenarioform-history-item .dl-horizontal {
+        grid-template-columns: minmax(0, 38%) minmax(0, 1fr);
+    }
+
+    .scenarioform-history-item .dl-horizontal dd {
+        overflow-wrap: anywhere;
+    }
+
+    .scenarioform-history-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .scenarioform-history-toolbar .btn {
+        min-height: 44px;
+    }
+
+    .scenarioform-history-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.scenarioform-associated-scenarios ul {
+    margin: 6px 0 12px;
+    padding-left: 22px;
+}
+
+.scenarioform-associated-scenarios li {
+    margin-bottom: 5px;
+}
+
+.scenarioform-scenario-return-option {
+    margin-left: 18px;
+    font-weight: normal;
+}
+.scenarioform-user-mode .scenarioform-mobile-admin-action,
+.scenarioform-user-mode .scenarioform-danger-action,
+.scenarioform-user-mode #bt_removeHistoryResponse,
+.scenarioform-user-mode #bt_clearFormHistory,
+.scenarioform-user-mode .scenarioform-history-remove {
+    display: none !important;
+}
