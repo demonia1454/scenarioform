@@ -1,5 +1,12 @@
 # Changelog
 
+## V2.2 bêta 3 r57 — robustesse des erreurs et rechargements
+
+- Suppression compensatoire d’une réponse si l’enregistrement de ses valeurs échoue.
+- Gestionnaires d’événements JavaScript regroupés dans un espace de noms et remplacés proprement lors d’un rechargement.
+- Variables de glisser-déposer rendues redéclarables afin d’éviter une erreur lors d’un second chargement du script.
+
+
 ## V2.2 bêta 2 r56 — persistance des réponses
 
 - Ajout de la colonne `updated` manquante à `scenarioform_response_value` lors d’une installation neuve.
