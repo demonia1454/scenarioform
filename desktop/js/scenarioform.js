@@ -2712,6 +2712,9 @@ $.ajax({
 
         }
 
+        if (typeof jeedomUtils.hideAlert === 'function') {
+            jeedomUtils.hideAlert();
+        }
 
         loadFieldList(formId);
 
