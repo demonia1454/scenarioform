@@ -4,6 +4,10 @@ set -euo pipefail
 plugin_dir="$(cd "$(dirname "$0")/.." && pwd)"
 
 node --check "$plugin_dir/desktop/js/scenarioform.js"
+
+grep -q 'scenarioform_response_value.*ADD COLUMN IF NOT EXISTS.*updated' "$plugin_dir/plugin_info/install.php"
+grep -q '`updated` DATETIME NULL' "$plugin_dir/core/config/install.sql"
+grep -q "typeof jeedomUtils.hideAlert === 'function'" "$plugin_dir/desktop/js/scenarioform.js"
 node "$plugin_dir/tests/validation_regression.js"
 test -f "$plugin_dir/desktop/css/scenarioform.css"
 test -f "$plugin_dir/EXEMPLE_PRET_A_EMPLOI.md"
