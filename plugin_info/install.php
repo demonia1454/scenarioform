@@ -167,10 +167,12 @@ function scenarioform_install()
             `field_id` INT UNSIGNED NOT NULL,
             `value` LONGTEXT NULL,
             `created` DATETIME NULL,
+            `updated` DATETIME NULL,
             PRIMARY KEY (`id`),
             KEY `idx_response_id` (`response_id`),
             KEY `idx_field_id` (`field_id`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
+        "ALTER TABLE `scenarioform_response_value` ADD COLUMN IF NOT EXISTS `updated` DATETIME NULL AFTER `created`",
         "ALTER TABLE `scenarioform_field` ADD COLUMN IF NOT EXISTS `required` TINYINT(1) NOT NULL DEFAULT 0"
     ]);
 
