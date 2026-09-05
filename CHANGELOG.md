@@ -1,5 +1,13 @@
 # Changelog
 
+## V2.2 bêta 2 r56 — persistance des réponses
+
+- Ajout de la colonne `updated` manquante à `scenarioform_response_value` lors d’une installation neuve.
+- Migration idempotente des installations existantes afin de permettre l’enregistrement des valeurs saisies.
+- Effacement de l’ancienne alerte globale après la sauvegarde réussie d’un champ.
+- Validation sur une VM Jeedom dédiée : mise à jour, valeurs, tags, retour métier et historique.
+
+
 ## V2.2 bêta 1 r55 — promotion après recette
 
 - Promotion publique du paquet r54 après validation complète du parcours de recette.
