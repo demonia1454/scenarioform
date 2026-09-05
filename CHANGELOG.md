@@ -5,6 +5,7 @@
 - Suppression compensatoire d’une réponse si l’enregistrement de ses valeurs échoue.
 - Gestionnaires d’événements JavaScript regroupés dans un espace de noms et remplacés proprement lors d’un rechargement.
 - Variables de glisser-déposer rendues redéclarables afin d’éviter une erreur lors d’un second chargement du script.
+- Correction du libellé de champ hors portée lors de l’ouverture de la confirmation de suppression.
 
 
 ## V2.2 bêta 2 r56 — persistance des réponses
