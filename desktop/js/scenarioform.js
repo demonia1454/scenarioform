@@ -2868,7 +2868,6 @@ function renderFields(fields) {
                 .closest('tr')
                 .attr('data-field-label') || ('#' + fieldId);
 
-
             let formId = $('#div_scenarioform-form')
                 .attr('data-form-id');
 
@@ -2895,6 +2894,10 @@ function renderFields(fields) {
             let fieldId = $(this)
                 .closest('tr')
                 .data('id');
+
+            let fieldLabel = $(this)
+                .closest('tr')
+                .attr('data-field-label') || ('#' + fieldId);
 
 
 
