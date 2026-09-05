@@ -81,6 +81,7 @@ CREATE TABLE IF NOT EXISTS `scenarioform_response_value` (
   `field_id` INT UNSIGNED NOT NULL,
   `value` LONGTEXT NULL,
   `created` DATETIME NULL,
+  `updated` DATETIME NULL,
   PRIMARY KEY (`id`),
   KEY `idx_response_id` (`response_id`),
   KEY `idx_field_id` (`field_id`),
