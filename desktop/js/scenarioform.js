@@ -8,6 +8,8 @@ var scenarioformResultRequest = null;
 var scenarioformResultPollTimer = null;
 var scenarioformPendingReuseResponseId = null;
 
+$(document).off('.scenarioform');
+
 //
 //        RESET ECRAN SCENARIOFORM
 // 
@@ -810,7 +812,7 @@ function loadRequestForm(requestId, formId)
 
 }
 
-$(document).on('click', '#bt_createScenarioTemplate', function() {
+$(document).on('click.scenarioform', '#bt_createScenarioTemplate', function() {
     let formId = parseInt($('#div_scenarioform-form').attr('data-form-id'), 10);
     let requestId = parseInt($('.scenarioform-request.active').attr('data-id'), 10);
     let formName = $.trim($('#scenarioform-selected-form .scenarioform-page-title').text())
@@ -3171,7 +3173,7 @@ function scenarioformOpenGuidedAssistant()
     });
 }
 
-$(document).on('click', '#bt_scenarioformAssistant', function() {
+$(document).on('click.scenarioform', '#bt_scenarioformAssistant', function() {
     scenarioformOpenGuidedAssistant();
 });
 
@@ -3307,7 +3309,7 @@ $(document).off('click', '#bt_addScenarioForm')
         }
     );
 
-$(document).on('click', '#bt_createRequest',
+$(document).on('click.scenarioform', '#bt_createRequest',
     function(){
 
         $.ajax({
@@ -3367,7 +3369,7 @@ $(document).on('click', '#bt_createRequest',
     }
 );
 
-$(document).on('click', '#bt_cancelCreateRequest',
+$(document).on('click.scenarioform', '#bt_cancelCreateRequest',
     function (e) {
 
         e.preventDefault();
@@ -3381,7 +3383,7 @@ $(document).on('click', '#bt_cancelCreateRequest',
     }
 );
 
-$(document).on('click', '#bt_editRequest',
+$(document).on('click.scenarioform', '#bt_editRequest',
     function () {
 
     let requestId = $('#div_scenarioformEdition')
@@ -3395,7 +3397,7 @@ $(document).on('click', '#bt_editRequest',
 
 });
 
-$(document).on('click', '#bt_saveRequest',
+$(document).on('click.scenarioform', '#bt_saveRequest',
     function(){
 
         saveRequest();
@@ -3403,7 +3405,7 @@ $(document).on('click', '#bt_saveRequest',
     }
 );
 
-$(document).on('click', '#bt_backRequest', 
+$(document).on('click.scenarioform', '#bt_backRequest', 
     function () {
 
     const requestId = $(this).data('request-id');
@@ -3420,7 +3422,7 @@ $(document).on('click', '#bt_backRequest',
 
 });
 
-$(document).on('click', '#bt_removeRequest',
+$(document).on('click.scenarioform', '#bt_removeRequest',
         function () {
 
 
@@ -3573,7 +3575,7 @@ $(document).on('click', '#bt_removeRequest',
         }
 );
 
-$(document).on('click', '#bt_backScenarioForm',
+$(document).on('click.scenarioform', '#bt_backScenarioForm',
     function () {
 
         resetScenarioFormScreen();
@@ -3586,7 +3588,7 @@ $(document).on('click', '#bt_backScenarioForm',
 // =======================   Variable   =========================
 // 
 
-$(document).on('click', '.scenarioform-request',
+$(document).on('click.scenarioform', '.scenarioform-request',
     function (e) {
 
         e.preventDefault();
@@ -3635,7 +3637,7 @@ $(document).on('click', '.scenarioform-request',
     }
 );
 
-$(document).on('click', '#bt_createForm',
+$(document).on('click.scenarioform', '#bt_createForm',
 function(){
 
     $('#bt_editForm, #bt_removeForm').prop('disabled', true);
@@ -3715,7 +3717,7 @@ function(){
 
 });
 
-$(document).on('click', '.scenarioform-form-choice', function() {
+$(document).on('click.scenarioform', '.scenarioform-form-choice', function() {
     let requestId = $('#div_scenarioformEdition').data('request-id');
     let formId = parseInt($(this).attr('data-form-id'), 10);
     $('.scenarioform-form-choice').removeClass('active');
@@ -3723,7 +3725,7 @@ $(document).on('click', '.scenarioform-form-choice', function() {
     loadRequestForm(requestId, formId);
 });
 
-$(document).on('keydown', '.scenarioform-form-choice', function(event) {
+$(document).on('keydown.scenarioform', '.scenarioform-form-choice', function(event) {
     if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
         $(this).trigger('click');
@@ -3753,7 +3755,7 @@ function saveFormOrder() {
     });
 }
 
-$(document).on('click', '.bt_form_up, .bt_form_down', function(event) {
+$(document).on('click.scenarioform', '.bt_form_up, .bt_form_down', function(event) {
     event.preventDefault();
     event.stopPropagation();
     let item = $(this).closest('.scenarioform-form-choice');
@@ -3767,17 +3769,17 @@ $(document).on('click', '.bt_form_up, .bt_form_down', function(event) {
     saveFormOrder();
 });
 
-let scenarioformDraggedForm = null;
-$(document).on('dragstart', '.scenarioform-form-choice', function(event) {
+var scenarioformDraggedForm = null;
+$(document).on('dragstart.scenarioform', '.scenarioform-form-choice', function(event) {
     scenarioformDraggedForm = this;
     event.originalEvent.dataTransfer.effectAllowed = 'move';
     $(this).addClass('is-dragging');
 });
-$(document).on('dragover', '.scenarioform-form-choice', function(event) {
+$(document).on('dragover.scenarioform', '.scenarioform-form-choice', function(event) {
     event.preventDefault();
     event.originalEvent.dataTransfer.dropEffect = 'move';
 });
-$(document).on('drop', '.scenarioform-form-choice', function(event) {
+$(document).on('drop.scenarioform', '.scenarioform-form-choice', function(event) {
     event.preventDefault();
     event.stopPropagation();
     if (scenarioformDraggedForm && scenarioformDraggedForm !== this) {
@@ -3790,12 +3792,12 @@ $(document).on('drop', '.scenarioform-form-choice', function(event) {
         saveFormOrder();
     }
 });
-$(document).on('dragend', '.scenarioform-form-choice', function() {
+$(document).on('dragend.scenarioform', '.scenarioform-form-choice', function() {
     $(this).removeClass('is-dragging');
     scenarioformDraggedForm = null;
 });
 
-$(document).on('click', '.bt_scenario_up', function() {
+$(document).on('click.scenarioform', '.bt_scenario_up', function() {
     let item = $(this).closest('.scenarioform-scenario-order-item');
     let previous = item.prev('.scenarioform-scenario-order-item');
     if (previous.length) {
@@ -3803,7 +3805,7 @@ $(document).on('click', '.bt_scenario_up', function() {
     }
 });
 
-$(document).on('click', '.bt_scenario_down', function() {
+$(document).on('click.scenarioform', '.bt_scenario_down', function() {
     let item = $(this).closest('.scenarioform-scenario-order-item');
     let next = item.next('.scenarioform-scenario-order-item');
     if (next.length) {
@@ -3811,16 +3813,16 @@ $(document).on('click', '.bt_scenario_down', function() {
     }
 });
 
-let scenarioformDraggedScenario = null;
-$(document).on('dragstart', '.scenarioform-scenario-order-item', function(event) {
+var scenarioformDraggedScenario = null;
+$(document).on('dragstart.scenarioform', '.scenarioform-scenario-order-item', function(event) {
     scenarioformDraggedScenario = this;
     event.originalEvent.dataTransfer.effectAllowed = 'move';
 });
-$(document).on('dragover', '.scenarioform-scenario-order-item', function(event) {
+$(document).on('dragover.scenarioform', '.scenarioform-scenario-order-item', function(event) {
     event.preventDefault();
     event.originalEvent.dataTransfer.dropEffect = 'move';
 });
-$(document).on('drop', '.scenarioform-scenario-order-item', function(event) {
+$(document).on('drop.scenarioform', '.scenarioform-scenario-order-item', function(event) {
     event.preventDefault();
     if (scenarioformDraggedScenario && scenarioformDraggedScenario !== this) {
         $(scenarioformDraggedScenario).insertBefore(this);
@@ -3828,7 +3830,7 @@ $(document).on('drop', '.scenarioform-scenario-order-item', function(event) {
     scenarioformDraggedScenario = null;
 });
  
-$(document).on('click', '#bt_editForm',
+$(document).on('click.scenarioform', '#bt_editForm',
     function(){
 
         let formId =
@@ -3841,7 +3843,7 @@ $(document).on('click', '#bt_editForm',
     }
 );
 
-$(document).on('click', '#bt_backForm',
+$(document).on('click.scenarioform', '#bt_backForm',
     function(){
 
         let requestId =
@@ -3853,7 +3855,7 @@ $(document).on('click', '#bt_backForm',
     }
 );
 
-$(document).on('click', '#bt_saveForm',
+$(document).on('click.scenarioform', '#bt_saveForm',
     function(){
 
         saveForm();
@@ -3861,7 +3863,7 @@ $(document).on('click', '#bt_saveForm',
     }
 );
 
-$(document).on('click', '#bt_removeForm',
+$(document).on('click.scenarioform', '#bt_removeForm',
     function(){
 
         let formId =
@@ -3947,7 +3949,7 @@ $(document).on('click', '#bt_removeForm',
 // ======================== Champ ===============================
 //
 
-$(document).on('click', '#bt_addField',
+$(document).on('click.scenarioform', '#bt_addField',
 function(){
 
     let formId =
@@ -3962,7 +3964,7 @@ function(){
 
 });
 
-$(document).on('click', '#bt_enterFormValues',
+$(document).on('click.scenarioform', '#bt_enterFormValues',
     function()
     {
         let formId = $('#div_scenarioform-form').attr('data-form-id');
@@ -3985,7 +3987,7 @@ $(document).on('click', '#bt_enterFormValues',
     }
 );
 
-$(document).on('click', '#bt_toggleMobileManagement',
+$(document).on('click.scenarioform', '#bt_toggleMobileManagement',
     function()
     {
         let app = $('.scenarioform-app');
@@ -4000,7 +4002,7 @@ $(document).on('click', '#bt_toggleMobileManagement',
     }
 );
 
-$(document).on('click', '#bt_manageFields',
+$(document).on('click.scenarioform', '#bt_manageFields',
     function()
     {
         scenarioformViewMode = 'management';
@@ -4026,7 +4028,7 @@ $(document).on('click', '#bt_manageFields',
 //
 
 
-$(document).on('click', '#bt_executeForm',
+$(document).on('click.scenarioform', '#bt_executeForm',
         function () {
 
             let executeButton = $(this);
@@ -4496,7 +4498,7 @@ function scenarioformStopResultPolling() {
     }
 }
 
-$(document).on('click', '#bt_newEntryAfterExecution', function() {
+$(document).on('click.scenarioform', '#bt_newEntryAfterExecution', function() {
     let formId = parseInt($(this).attr('data-form-id'), 10);
     scenarioformStopResultPolling();
     if (formId) {
@@ -4504,7 +4506,7 @@ $(document).on('click', '#bt_newEntryAfterExecution', function() {
     }
 });
 
-$(document).on('click', '#bt_historyAfterExecution', function() {
+$(document).on('click.scenarioform', '#bt_historyAfterExecution', function() {
     let formId = parseInt($(this).attr('data-form-id'), 10);
     scenarioformStopResultPolling();
     if (formId) {
@@ -4512,7 +4514,7 @@ $(document).on('click', '#bt_historyAfterExecution', function() {
     }
 });
 
-$(document).on('click', '#bt_backExecuteForm',
+$(document).on('click.scenarioform', '#bt_backExecuteForm',
 function () {
 
     const requestId =
@@ -4653,7 +4655,7 @@ function showFormHistory(formId) {
     loadFormHistory(formId);
 }
 
-$(document).on('click', '#bt_historyForm', 
+$(document).on('click.scenarioform', '#bt_historyForm', 
     function () {
 
 
@@ -4677,7 +4679,7 @@ showFormValues(formId, true);
 
 });
 
-$(document).on('click', '#bt_backHistoryToEntry', function() {
+$(document).on('click.scenarioform', '#bt_backHistoryToEntry', function() {
     let formId = $('#div_scenarioform-form').attr('data-form-id');
     if (formId) {
         showFormValues(formId, false);
@@ -5000,7 +5002,7 @@ scenarioformHistoryRequest = $.ajax({
 
 }
 
-$(document).on('click', '.scenarioform-history-remove', function() {
+$(document).on('click.scenarioform', '.scenarioform-history-remove', function() {
     var responseId = parseInt($(this).attr('data-response-id'), 10);
     var formId = parseInt($('#div_scenarioform-form').attr('data-form-id'), 10);
 
@@ -5046,7 +5048,7 @@ $(document).on('click', '.scenarioform-history-remove', function() {
     );
 });
 
-$(document).on('click', '#bt_clearFormHistory', function() {
+$(document).on('click.scenarioform', '#bt_clearFormHistory', function() {
     var formId = parseInt($('#div_scenarioform-form').attr('data-form-id'), 10);
 
     if (!formId) {
@@ -5093,7 +5095,7 @@ $(document).on('click', '#bt_clearFormHistory', function() {
 
 // ================REPRENDRE UNE RÉPONSE===================
  
-$(document).on('click', '.scenarioform-history-reuse',
+$(document).on('click.scenarioform', '.scenarioform-history-reuse',
         function () {
 
             var responseId = parseInt(
