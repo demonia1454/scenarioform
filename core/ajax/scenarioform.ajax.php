@@ -949,7 +949,8 @@ case 'executeForm':
         * ==========================================
         */
 
-        foreach ($values as $fieldName => $data) {
+        try {
+            foreach ($values as $fieldName => $data) {
 
             $field = null;
 
@@ -1005,14 +1006,16 @@ case 'executeForm':
 
 
             if (!$responseValue->save()) {
-
-                ajax::error(
-                    'Erreur sauvegarde valeur champ ' .
-                    $fieldName
-                );
-
-                return;
+                throw new Exception('Erreur sauvegarde valeur champ ' . $fieldName);
             }
+            }
+        } catch (Throwable $e) {
+            try {
+                $response->remove();
+            } catch (Throwable $cleanupError) {
+                log::add('scenarioform', 'error', 'Nettoyage réponse incomplète impossible : ' . $cleanupError->getMessage());
+            }
+            throw $e;
         }
 
 
