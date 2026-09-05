@@ -5,6 +5,12 @@ plugin_dir="$(cd "$(dirname "$0")/.." && pwd)"
 
 node --check "$plugin_dir/desktop/js/scenarioform.js"
 
+grep -q "Nettoyage réponse incomplète impossible" "$plugin_dir/core/ajax/scenarioform.ajax.php"
+grep -q "var scenarioformDraggedForm = null;" "$plugin_dir/desktop/js/scenarioform.js"
+grep -q "var scenarioformDraggedScenario = null;" "$plugin_dir/desktop/js/scenarioform.js"
+grep -Fq "\$(document).off('.scenarioform');" "$plugin_dir/desktop/js/scenarioform.js"
+! grep -Eq "\\$\\(document\\)\\.on\\(['\"](click|change|keydown|dragstart|dragover|drop|dragend)['\"]" "$plugin_dir/desktop/js/scenarioform.js"
+
 grep -q 'scenarioform_response_value.*ADD COLUMN IF NOT EXISTS.*updated' "$plugin_dir/plugin_info/install.php"
 grep -q '`updated` DATETIME NULL' "$plugin_dir/core/config/install.sql"
 grep -q "typeof jeedomUtils.hideAlert === 'function'" "$plugin_dir/desktop/js/scenarioform.js"
