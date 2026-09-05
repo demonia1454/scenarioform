@@ -8,6 +8,7 @@ node --check "$plugin_dir/desktop/js/scenarioform.js"
 grep -q "Nettoyage réponse incomplète impossible" "$plugin_dir/core/ajax/scenarioform.ajax.php"
 grep -q "var scenarioformDraggedForm = null;" "$plugin_dir/desktop/js/scenarioform.js"
 grep -q "var scenarioformDraggedScenario = null;" "$plugin_dir/desktop/js/scenarioform.js"
+test "$(grep -c "let fieldLabel = \$(this)" "$plugin_dir/desktop/js/scenarioform.js")" -eq 2
 grep -Fq "\$(document).off('.scenarioform');" "$plugin_dir/desktop/js/scenarioform.js"
 ! grep -Eq "\\$\\(document\\)\\.on\\(['\"](click|change|keydown|dragstart|dragover|drop|dragend)['\"]" "$plugin_dir/desktop/js/scenarioform.js"
 
