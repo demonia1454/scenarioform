@@ -4,6 +4,7 @@ ini_set('display_errors', 0);
 error_reporting(E_ALL);
 
 require_once dirname(__FILE__) . '/../../../../core/php/core.inc.php';
+require_once dirname(__FILE__) . '/../class/scenarioformGoogleCalendar.class.php';
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
@@ -59,6 +60,15 @@ try {
     $token = trim((string) ($payload['token'] ?? ''));
     $status = trim((string) ($payload['status'] ?? ''));
     $message = trim((string) ($payload['message'] ?? ''));
+    $document = [];
+    if (isset($payload['document']) && $payload['document'] !== '') {
+        $decodedDocument = is_array($payload['document'])
+            ? $payload['document'] : json_decode((string) $payload['document'], true);
+        if (!is_array($decodedDocument)) {
+            scenarioform_api_response(false, 'Compte rendu invalide');
+        }
+        $document = scenarioform::normalizeResultDocument($decodedDocument);
+    }
     $allowedStatuses = ['accepted', 'rejected', 'warning', 'error'];
 
     if ($responseId <= 0 || $scenarioId <= 0 || $token === '' ||
@@ -121,6 +131,44 @@ try {
         scenarioform_api_response(false, 'Scénario non associé à cette réponse');
     }
 
+    $scenarioStatement = $connection->prepare(
+        'SELECT id FROM scenarioform_response_scenario
+         WHERE response_id = :response_id AND scenario_id = :scenario_id
+         LIMIT 1 FOR UPDATE'
+    );
+    $scenarioStatement->execute(['response_id' => $responseId, 'scenario_id' => $scenarioId]);
+    $responseScenarioId = intval($scenarioStatement->fetchColumn());
+    if ($responseScenarioId <= 0) {
+        $connection->rollBack();
+        scenarioform_api_response(false, 'Résultat de scénario normalisé introuvable');
+    }
+
+    $scenarioUpdate = $connection->prepare(
+        'UPDATE scenarioform_response_scenario
+         SET business_status = :status, business_message = :message, updated = :updated
+         WHERE id = :id'
+    );
+    $scenarioUpdate->execute(['id' => $responseScenarioId, 'status' => $status, 'message' => $message, 'updated' => $now]);
+
+    if ($document !== []) {
+        $documentDelete = $connection->prepare(
+            'DELETE FROM scenarioform_response_document WHERE response_scenario_id = :response_scenario_id'
+        );
+        $documentDelete->execute(['response_scenario_id' => $responseScenarioId]);
+        $documentInsert = $connection->prepare(
+            'INSERT INTO scenarioform_response_document
+             (response_scenario_id, title, summary, content, format_version, event_at, created, updated)
+             VALUES (:response_scenario_id, :title, :summary, :content, 1, :event_at, :created, :updated)'
+        );
+        $documentInsert->execute([
+            'response_scenario_id' => $responseScenarioId,
+            'title' => $document['title'], 'summary' => $document['summary'],
+            'content' => json_encode(['sections' => $document['sections']], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+            'event_at' => $document['event_at'] !== '' ? $document['event_at'] : null,
+            'created' => $now, 'updated' => $now
+        ]);
+    }
+
     $statuses = array_map(
         static fn(array $result): string => (string) ($result['status'] ?? 'pending'),
         $results
@@ -145,15 +193,41 @@ try {
 
     $statement = $connection->prepare(
         'UPDATE scenarioform_response
-         SET configuration = :configuration, updated = :updated
+         SET configuration = :configuration, overall_status = :overall_status,
+             result_excerpt = :result_excerpt, completed = :completed, updated = :updated
          WHERE id = :id'
     );
     $statement->execute([
         'id' => $responseId,
         'configuration' => json_encode($configuration),
+        'overall_status' => $overallStatus,
+        'result_excerpt' => $message,
+        'completed' => $overallStatus === 'pending' ? null : $now,
         'updated' => $now
     ]);
 
+    // Suppression : seule une confirmation acceptée, associée au token
+    // de la réponse et à l'opération en attente, autorise l'effacement.
+    $pendingOperation = (string) ($configuration['history']['pending_operation'] ?? '');
+    if ($pendingOperation === 'Suppression' && $status === 'accepted') {
+        // Le 107 ne doit envoyer accepted qu'après confirmation explicite du 108.
+        // Nettoyage SQL et effacement ScenarioForm dans une même transaction.
+        scenarioformGoogleCalendar::deleteByResponseId($responseId, $connection);
+        $delete = $connection->prepare('DELETE FROM scenarioform_response WHERE id = :id');
+        $delete->execute(['id' => $responseId]);
+        if ($delete->rowCount() !== 1) {
+            throw new Exception('Réponse non supprimée');
+        }
+        $connection->commit();
+        scenarioform_api_response(true, 'Suppression confirmée', [
+            'response_id' => $responseId, 'deleted' => true
+        ]);
+    }
+    if ($pendingOperation === 'Suppression') {
+        unset($configuration['history']['pending_operation']);
+        $clear = $connection->prepare('UPDATE scenarioform_response SET configuration = :configuration WHERE id = :id');
+        $clear->execute(['configuration' => json_encode($configuration), 'id' => $responseId]);
+    }
     $connection->commit();
 
     scenarioform_api_response(true, 'Résultat métier enregistré', [

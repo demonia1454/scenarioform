@@ -10,9 +10,10 @@ ScenarioForm s'appuie sur la session et les profils Jeedom.
 - un administrateur peut créer, modifier, réorganiser et supprimer la
   configuration ScenarioForm ;
 - un utilisateur authentifié peut consulter les éléments actifs, saisir un
-  formulaire et consulter son propre historique ;
+  formulaire, puis consulter et gérer uniquement son propre historique ;
 - un utilisateur limité doit disposer de **Visualisation et exécution** sur
-  chaque scénario Jeedom associé au formulaire.
+  chaque scénario Jeedom associé au formulaire ;
+- seul un administrateur peut enrichir une liste de choix pendant la saisie.
 
 Le bandeau « Mode utilisateur » apparaît uniquement lorsque le compte connecté
 n'est pas administrateur. Il rappelle les fonctions disponibles et ne signale

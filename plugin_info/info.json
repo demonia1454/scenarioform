@@ -2,7 +2,7 @@
     "id": "scenarioform",
     "name": "ScenarioForm",
     "description": "Exécution de scénarios Jeedom depuis des formulaires personnalisables.",
-    "author": "kirk",
+    "author": "demonia",
     "require": "4.6",
     "category": "organization",
     "hasDependency": false,
@@ -14,7 +14,7 @@
         "4.6"
     ],
     "display": "scenarioform",
-    "mobile": false,
+    "mobile": "scenarioform",
     "changelog": "CHANGELOG.md",
     "documentation": "index.php?v=d&m=scenarioform&p=documentation",
     "link": {

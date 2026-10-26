@@ -19,6 +19,10 @@ $scenarioformIsAdmin = isConnect('admin');
 
     <!-- Barre d'actions -->
     <div class="col-xs-12 scenarioform-toolbar">
+        <legend class="scenarioform-section-title scenarioform-toolbar-title">
+            <i class="fas fa-list"></i>
+            {{Requêtes}}
+        </legend>
         <div class="pull-right scenarioform-toolbar-actions">
             <button class="btn btn-default btn-sm scenarioform-mobile-management-toggle"
                     id="bt_toggleMobileManagement"
@@ -43,21 +47,16 @@ $scenarioformIsAdmin = isConnect('admin');
     </div>
 
     <!-- Liste -->
-    <div class="col-lg-3 col-md-4 col-sm-5 scenarioform-sidebar">
-        <legend class="scenarioform-section-title">
-            <i class="fas fa-list"></i>
-            {{Requêtes}}
-        </legend>
-
+    <div class="col-lg-2 col-md-3 col-sm-4 scenarioform-sidebar">
         <div id="div_scenarioformList" class="list-group">
             <!-- alimenté en JS -->
         </div>
     </div>
 
     <!-- Edition -->
-    <div class="col-lg-9 col-md-8 col-sm-7 scenarioform-main">
+    <div class="col-lg-10 col-md-9 col-sm-8 scenarioform-main">
 
-        <legend class="scenarioform-section-title">
+        <legend id="scenarioform-main-title" class="scenarioform-section-title">
             <i class="fas fa-edit"></i>
             {{Edition}}
         </legend>

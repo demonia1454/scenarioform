@@ -370,7 +370,7 @@ public function setConfiguration($_key, $_value = null): self
     /**
      * Synchronise la liste ordonnée sans recréer les associations conservées.
      */
-    public function syncScenarios(array $scenarioIds): void
+    public function syncScenarios(array $scenarioIds): array
     {
         if ($this->id === null) {
             throw new Exception('Formulaire non sauvegardé');
@@ -400,6 +400,53 @@ public function setConfiguration($_key, $_value = null): self
                 $byScenario[$link->getScenarioId()] = $link;
             }
 
+            $existingIds = array_map('intval', array_keys($byScenario));
+            $targetIds = array_map('intval', array_keys($normalized));
+            $removedIds = array_values(array_diff($existingIds, $targetIds));
+            $addedIds = array_values(array_diff($targetIds, $existingIds));
+            $fieldTransfer = null;
+
+            if ($removedIds !== []) {
+                $placeholders = implode(',', array_fill(0, count($removedIds), '?'));
+                $legacyClause = count($existingIds) === 1 ? ' OR scenario_id IS NULL' : '';
+                $statement = DB::getConnection()->prepare(
+                    'SELECT COUNT(*)
+                     FROM scenarioform_field
+                     WHERE form_id = ? AND (scenario_id IN (' . $placeholders . ')' . $legacyClause . ')'
+                );
+                $statement->execute(array_merge([$this->id], $removedIds));
+                $fieldsToPreserve = intval($statement->fetchColumn());
+
+                if ($fieldsToPreserve > 0) {
+                    $isUnambiguousReplacement = count($existingIds) === 1 &&
+                        count($targetIds) === 1 && count($removedIds) === 1 && count($addedIds) === 1;
+                    if (!$isUnambiguousReplacement) {
+                        throw new Exception(
+                            'Impossible de retirer ce scénario : il possède ' . $fieldsToPreserve .
+                            ' champ(s). Conservez-le ou copiez/supprimez d’abord ses champs.'
+                        );
+                    }
+
+                    DB::Prepare(
+                        'UPDATE scenarioform_field
+                         SET scenario_id = :target_scenario_id, updated = :updated
+                         WHERE form_id = :form_id
+                           AND (scenario_id = :source_scenario_id OR scenario_id IS NULL)',
+                        [
+                            'target_scenario_id' => $addedIds[0],
+                            'source_scenario_id' => $removedIds[0],
+                            'form_id' => $this->id,
+                            'updated' => date('Y-m-d H:i:s')
+                        ]
+                    );
+                    $fieldTransfer = [
+                        'count' => $fieldsToPreserve,
+                        'source_scenario_id' => $removedIds[0],
+                        'target_scenario_id' => $addedIds[0]
+                    ];
+                }
+            }
+
             $order = 1;
             foreach ($normalized as $scenarioId => $expectResult) {
                 $link = $byScenario[$scenarioId] ?? new scenarioformFormScenario();
@@ -426,6 +473,7 @@ public function setConfiguration($_key, $_value = null): self
 
             include_file('core', 'scenarioform', 'class', 'scenarioform');
             scenarioform::ensureResultActionEquipment();
+            return ['field_transfer' => $fieldTransfer];
         } catch (Throwable $e) {
             DB::Prepare('ROLLBACK', []);
             throw $e;

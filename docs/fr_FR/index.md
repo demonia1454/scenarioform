@@ -90,17 +90,65 @@ Jeedom. Un lancement manuel du scénario modèle est volontairement ignoré.
 5. suivre les résultats attendus ;
 6. utiliser **Nouvelle saisie** ou **Voir l'historique**.
 
+Pendant la saisie, un administrateur peut utiliser **Ajouter une valeur** sous
+une liste de choix. La nouvelle valeur est enregistrée dans la configuration du
+champ, ajoutée à la liste puis sélectionnée. Cette commande n'est pas affichée
+aux utilisateurs non administrateurs.
+
+Lorsqu’un formulaire contient plusieurs scénarios, choisissez d’abord le
+scénario à exécuter. ScenarioForm affiche uniquement les champs associés à ce
+scénario et ne lance que celui-ci.
+
+Dans la gestion des champs d’un formulaire associé à un seul scénario, utilisez
+**Copier depuis…** pour choisir un binôme formulaire/scénario parmi les autres
+formulaires de la même requête. Les champs sont dupliqués avec de nouveaux
+identifiants et peuvent ensuite évoluer indépendamment.
+
 Lorsqu'un scénario est configuré sans retour métier attendu, il est présenté
 comme lancé immédiatement. Lorsqu'un retour est attendu, ScenarioForm suit les
 états `accepted`, `rejected`, `warning`, `error` ou `timeout`.
+
+Pendant cette attente, **Retour — continuer en arrière-plan** permet de quitter
+l'écran sans interrompre le scénario. Le suivi visuel s'arrête dans le
+navigateur, mais l'éventuel retour métier reste enregistré et peut être
+consulté ultérieurement dans l'historique.
 
 ## Consulter et reprendre l'historique
 
 Le bouton **Historique** affiche les réponses du formulaire. Une saisie peut
 être reprise pour préremplir un nouveau formulaire.
 
+L’ouverture affiche d’abord la **Liste**. Le bouton **Statistiques** donne
+ensuite accès à la synthèse de la période ; **Liste** revient aux exécutions.
+Un clic sur un indicateur statistique ouvre la liste filtrée correspondante.
+
+La vue statistique calcule les taux de succès et d’incident, les absences de
+retour, les durées moyenne, minimale et maximale, ainsi que l’évolution des
+exécutions. L’analyse des champs dépend de leur type : minimum/moyenne/maximum
+pour les nombres, proportions pour les booléens, fréquences pour les choix et
+textes, regroupement chronologique pour les dates. Les résultats portent sur le
+formulaire ouvert et la période choisie ; les anciennes données incomplètes sont
+ignorées uniquement pour le calcul qu’elles ne permettent pas d’effectuer.
+
+Pour une période bornée, la vue compare automatiquement les résultats avec la
+période précédente de même durée et signale l’évolution du taux d’incident. Elle
+présente aussi l’évolution des valeurs numériques, les scénarios les plus souvent
+en échec et les formulaires les plus utilisés. Le classement transverse respecte
+les droits : un utilisateur limité ne voit que ses propres exécutions.
+
+La liste présente une synthèse sur deux lignes. **Détails** déplie les valeurs,
+le résultat technique du lancement et le résultat métier complet.
+
+La période, le statut et la recherche dans les valeurs ou messages permettent
+de réduire la liste. L’historique est déjà limité au formulaire ouvert. La
+durée de chaque scénario apparaît dans son résultat lorsqu’elle est disponible.
+**Exporter la sélection (.csv)** télécharge exactement la sélection affichée, avec une colonne
+par champ et les résultats de lancement et métier.
+
 - un administrateur voit l'ensemble de l'historique ;
 - un utilisateur non administrateur voit uniquement ses propres réponses ;
+- chaque utilisateur peut supprimer une de ses réponses ou vider sa propre
+  partie de l'historique ;
 - les anciennes réponses sans propriétaire restent visibles uniquement des
   administrateurs.
 
@@ -133,6 +181,56 @@ un certificat valide.
 
 Le retour métier s'effectue localement de Jeedom vers lui-même. Il ne nécessite
 aucun port supplémentaire ni exposition directe de l'API du plugin.
+
+### Compte rendu métier enrichi
+
+Le message simple reste suffisant dans la majorité des cas. Un scénario peut
+aussi fournir un quatrième argument facultatif à `sendResult` pour créer un
+compte rendu consultable depuis le bouton **Compte rendu** de l'historique :
+
+```php
+$document = [
+    'title' => 'Compte rendu du traitement',
+    'summary' => 'La préparation du logement est planifiée.',
+    'event_at' => $dateRetour->format('Y-m-d 18:00:00'),
+    'sections' => [
+        ['title' => 'Échéance', 'content' => $dateRetour->format('d/m/Y')],
+        ['title' => 'Actions', 'content' => ['Chauffage programmé', 'Éclairage vérifié']],
+        ['title' => 'Paramètres', 'content' => ['Mode' => 'Confort', 'Consigne' => '19 °C']]
+    ]
+];
+scenarioform::sendResult($scenario, 'accepted', 'Traitement terminé', $document);
+```
+
+Pour afficher un tableau et permettre sa copie directe dans Excel,
+LibreOffice Calc ou Google Sheets, utilisez une section de type `table` :
+
+```php
+$document = [
+    'title' => 'Export mensuel',
+    'summary' => '31 lignes exportées.',
+    'event_at' => '2026-08-01 00:00:00',
+    'sections' => [[
+        'title' => 'Données',
+        'type' => 'table',
+        'headers' => ['Jour', 'Date', 'Valeur'],
+        'rows' => [
+            [1, '01/08/2026', '123,45'],
+            [2, '02/08/2026', '124,18']
+        ]
+    ]]
+];
+scenarioform::sendResult($scenario, 'accepted', 'Export terminé', $document);
+```
+
+Le bouton **Copier pour tableur** apparaît dans la fenêtre dès que le compte
+rendu contient au moins une section `table`. Les colonnes sont copiées au
+format TSV, adapté au collage direct dans un tableur.
+
+`event_at` représente la date métier facultative. Les dates techniques de
+création et de dernière modification sont ajoutées automatiquement. Les
+sections acceptent du texte, une liste ou des couples libellé/valeur ; elles
+sont toujours affichées comme du texte et jamais interprétées comme du HTML.
 
 Les détails sont regroupés dans
 [`SECURITE_ET_ACCES.md`](../../SECURITE_ET_ACCES.md).
@@ -171,4 +269,3 @@ La version 2.2 couvre la création, la saisie, l'exécution, les retours métier
 les droits et l'historique opérationnel. Les fonctions avancées d'analyse, de
 statistiques et de tableaux de bord historiques sont volontairement reportées
 à une future version 2.3.
-

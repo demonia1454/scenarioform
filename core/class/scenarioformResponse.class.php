@@ -5,6 +5,7 @@ class scenarioformResponse
     private ?int $id = null;
 
     private ?int $formId = null;
+    private ?int $scenarioId = null;
 
     private ?string $token = null;
 
@@ -53,6 +54,9 @@ class scenarioformResponse
         $this->formId = $formId;
         return $this;
     }
+
+    public function getScenarioId(): ?int { return $this->scenarioId; }
+    public function setScenarioId(?int $scenarioId): self { $this->scenarioId = $scenarioId; return $this; }
 
 
     public function getToken(): ?string
@@ -214,7 +218,7 @@ public function getTags(): array
          * Lance les scénarios associés à cette réponse
          */
 
-    public function launchScenarios(array $additionalTags = []): array
+    public function launchScenarios(array $additionalTags = [], ?int $selectedScenarioId = null): array
     {
 
         include_file('core', 'scenarioformFormScenario', 'class', 'scenarioform');
@@ -233,6 +237,13 @@ public function getTags(): array
 
 
             $scenarios = $form->getScenarios();
+
+            if ($selectedScenarioId !== null) {
+                $scenarios = array_values(array_filter(
+                    $scenarios,
+                    static fn($scenario): bool => intval($scenario->getId()) === $selectedScenarioId
+                ));
+            }
 
             if (count($scenarios) === 0) {
                 throw new Exception(
@@ -339,6 +350,23 @@ public function getTags(): array
             );
             $statement->execute([
                 'configuration' => json_encode($configuration),
+                'updated' => $now,
+                'id' => $this->id
+            ]);
+            $statement = $connection->prepare(
+                "UPDATE scenarioform_response_scenario
+                 SET business_status = 'timeout', updated = :updated
+                 WHERE response_id = :response_id AND business_status = 'pending'"
+            );
+            $statement->execute(['updated' => $now, 'response_id' => $this->id]);
+            $statement = $connection->prepare(
+                'UPDATE scenarioform_response
+                 SET overall_status = :status, completed = :completed, updated = :updated
+                 WHERE id = :id'
+            );
+            $statement->execute([
+                'status' => $configuration['history']['overall_status'],
+                'completed' => $now,
                 'updated' => $now,
                 'id' => $this->id
             ]);
@@ -457,6 +485,35 @@ public function getTags(): array
                 'updated' => $now,
                 'id' => $matchedResponseId
             ]);
+
+            $excerpt = function_exists('mb_substr')
+                ? mb_substr(trim($message), 0, 500)
+                : substr(trim($message), 0, 500);
+            $statement = $connection->prepare(
+                'UPDATE scenarioform_response_scenario
+                 SET business_status = :status, business_message = :message, updated = :updated
+                 WHERE response_id = :response_id AND scenario_id = :scenario_id'
+            );
+            $statement->execute([
+                'status' => $status,
+                'message' => $excerpt,
+                'updated' => $now,
+                'response_id' => $matchedResponseId,
+                'scenario_id' => $scenarioId
+            ]);
+            $statement = $connection->prepare(
+                'UPDATE scenarioform_response
+                 SET overall_status = :status, result_excerpt = :excerpt,
+                     completed = :completed, updated = :updated
+                 WHERE id = :id'
+            );
+            $statement->execute([
+                'status' => $matchedConfiguration['history']['overall_status'],
+                'excerpt' => $excerpt,
+                'completed' => $now,
+                'updated' => $now,
+                'id' => $matchedResponseId
+            ]);
             $connection->commit();
 
             log::add(
@@ -529,6 +586,7 @@ public function save(): bool
                 INSERT INTO scenarioform_response
                 (
                     form_id,
+                    scenario_id,
                     token,
                     source,
                     configuration,
@@ -538,6 +596,7 @@ public function save(): bool
                 VALUES
                 (
                     :form_id,
+                    :scenario_id,
                     :token,
                     :source,
                     :configuration,
@@ -548,6 +607,7 @@ public function save(): bool
 
             $params = [
                 'form_id'       => $this->formId,
+                'scenario_id'   => $this->scenarioId,
                 'token'         => $this->token,
                 'source'        => $this->source,
                 'configuration' => $this->configuration,
@@ -597,6 +657,7 @@ public function save(): bool
                 UPDATE scenarioform_response
                 SET
                     form_id = :form_id,
+                    scenario_id = :scenario_id,
                     token = :token,
                     source = :source,
                     configuration = :configuration,
@@ -607,6 +668,7 @@ public function save(): bool
             $params = [
                 'id'            => $this->id,
                 'form_id'       => $this->formId,
+                'scenario_id'   => $this->scenarioId,
                 'token'         => $this->token,
                 'source'        => $this->source,
                 'configuration' => $this->configuration,
@@ -740,6 +802,7 @@ public function save(): bool
             SELECT 
                 id,
                 form_id AS formId,
+                scenario_id AS scenarioId,
                 token,
                 source,
                 configuration,
@@ -773,6 +836,7 @@ public function save(): bool
             SELECT
                 id,
                 form_id AS formId,
+                scenario_id AS scenarioId,
                 token,
                 source,
                 configuration,
@@ -806,6 +870,7 @@ public function save(): bool
             SELECT 
                 id,
                 form_id AS formId,
+                scenario_id AS scenarioId,
                 token,
                 source,
                 configuration,

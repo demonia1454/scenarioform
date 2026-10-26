@@ -1,0 +1,9 @@
+ScenarioForm v2.2-beta3-r111 - correctif local authentification HTTPS
+
+Fichier modifie : core/ajax/scenarioform.ajax.php
+- Ajout de include_file('core', 'authentification', 'php'); apres core.inc.php
+- Suppression de session_start() explicite
+- Conservation des controles isConnect() et des droits.
+
+Ce paquet est une adaptation de l'archive fournie, pas une version officielle r112.
+Effectuer une sauvegarde Jeedom avant remplacement du plugin.

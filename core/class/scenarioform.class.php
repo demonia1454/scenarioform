@@ -320,7 +320,7 @@ class scenarioform extends eqLogic
      * Si le scénario n'a pas été lancé par ScenarioForm, l'appel est ignoré
      * proprement afin que le même scénario reste exécutable manuellement.
      */
-    public static function sendResult($scenario, string $status, string $message = ''): array
+    public static function sendResult($scenario, string $status, string $message = '', array $document = []): array
     {
         $allowedStatuses = ['accepted', 'rejected', 'warning', 'error'];
         if (!in_array($status, $allowedStatuses, true)) {
@@ -334,7 +334,96 @@ class scenarioform extends eqLogic
         }
 
         $tags = $scenario->getTags();
-        return self::sendResultWithTags($tags, $status, $message);
+        return self::sendResultWithTags($tags, $status, $message, $document);
+    }
+
+    public static function normalizeResultDocument(array $document): array
+    {
+        if ($document === []) {
+            return [];
+        }
+        $cut = static function ($value, int $length): string {
+            $value = trim((string) $value);
+            return function_exists('mb_substr') ? mb_substr($value, 0, $length) : substr($value, 0, $length);
+        };
+        $title = $cut($document['title'] ?? '', 255);
+        if ($title === '') {
+            throw new InvalidArgumentException('Le compte rendu doit comporter un titre');
+        }
+        $eventAt = trim((string) ($document['event_at'] ?? ''));
+        if ($eventAt !== '') {
+            $timestamp = strtotime($eventAt);
+            if ($timestamp === false) {
+                throw new InvalidArgumentException('Date métier du compte rendu invalide');
+            }
+            $eventAt = date('Y-m-d H:i:s', $timestamp);
+        }
+        $sections = $document['sections'] ?? [];
+        if (!is_array($sections)) {
+            throw new InvalidArgumentException('Sections du compte rendu invalides');
+        }
+        $normalizedSections = [];
+        foreach (array_slice(array_values($sections), 0, 50) as $section) {
+            if (!is_array($section)) {
+                throw new InvalidArgumentException('Section du compte rendu invalide');
+            }
+            $sectionTitle = $cut($section['title'] ?? '', 255);
+            if (($section['type'] ?? '') !== 'table') {
+                $normalizedSections[] = [
+                    'title' => $sectionTitle,
+                    'content' => $section['content'] ?? ''
+                ];
+                continue;
+            }
+
+            $headers = $section['headers'] ?? [];
+            $rows = $section['rows'] ?? [];
+            if (!is_array($headers) || !is_array($rows) || $headers === []) {
+                throw new InvalidArgumentException('Tableau du compte rendu invalide');
+            }
+            $headers = array_slice(array_values($headers), 0, 50);
+            $normalizedHeaders = [];
+            foreach ($headers as $header) {
+                if (is_array($header) || is_object($header)) {
+                    throw new InvalidArgumentException('En-tête de tableau invalide');
+                }
+                $normalizedHeaders[] = $cut($header, 255);
+            }
+            $normalizedRows = [];
+            foreach (array_slice(array_values($rows), 0, 2000) as $row) {
+                if (!is_array($row)) {
+                    throw new InvalidArgumentException('Ligne de tableau invalide');
+                }
+                $normalizedRow = [];
+                foreach (array_slice(array_values($row), 0, count($normalizedHeaders)) as $cell) {
+                    if (is_array($cell) || is_object($cell)) {
+                        throw new InvalidArgumentException('Cellule de tableau invalide');
+                    }
+                    $normalizedRow[] = $cut($cell, 2000);
+                }
+                while (count($normalizedRow) < count($normalizedHeaders)) {
+                    $normalizedRow[] = '';
+                }
+                $normalizedRows[] = $normalizedRow;
+            }
+            $normalizedSections[] = [
+                'title' => $sectionTitle,
+                'type' => 'table',
+                'headers' => $normalizedHeaders,
+                'rows' => $normalizedRows
+            ];
+        }
+        $normalized = [
+            'title' => $title,
+            'summary' => $cut($document['summary'] ?? '', 2000),
+            'event_at' => $eventAt,
+            'sections' => $normalizedSections
+        ];
+        $encoded = json_encode($normalized, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        if ($encoded === false || strlen($encoded) > 65535) {
+            throw new InvalidArgumentException('Compte rendu trop volumineux (64 Ko maximum)');
+        }
+        return $normalized;
     }
 
     public static function getInternalCallbackUrl(): string
@@ -454,7 +543,8 @@ class scenarioform extends eqLogic
     public static function sendResultWithTags(
         array $tags,
         string $status,
-        string $message = ''
+        string $message = '',
+        array $document = []
     ): array {
         $allowedStatuses = ['accepted', 'rejected', 'warning', 'error'];
         if (!in_array($status, $allowedStatuses, true)) {
@@ -498,7 +588,12 @@ class scenarioform extends eqLogic
         // transformer le retour métier en requête vers un hôte arbitraire.
         $url = self::getInternalCallbackUrl();
 
-        $payload = http_build_query([
+        try {
+            $document = self::normalizeResultDocument($document);
+        } catch (InvalidArgumentException $e) {
+            return ['success' => false, 'skipped' => false, 'message' => $e->getMessage()];
+        }
+        $payloadData = [
             'response_id' => $responseId,
             'scenario_id' => $scenarioId,
             'token' => $token,
@@ -506,7 +601,11 @@ class scenarioform extends eqLogic
             'message' => function_exists('mb_substr')
                 ? mb_substr(trim($message), 0, 500)
                 : substr(trim($message), 0, 500)
-        ]);
+        ];
+        if ($document !== []) {
+            $payloadData['document'] = json_encode($document, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        }
+        $payload = http_build_query($payloadData);
 
         if (!function_exists('curl_init')) {
             log::add('scenarioform', 'error', 'Retour métier impossible : extension cURL absente');
