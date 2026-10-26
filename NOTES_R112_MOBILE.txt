@@ -1,0 +1,5 @@
+ScenarioForm v2.2-beta3-r112 — variante locale non officielle
+La rubrique Plugins mobile affiche les requêtes et leurs formulaires.
+Un appui sur un formulaire ouvre la page desktop du plugin directement sur ce formulaire.
+La saisie reste assurée par l’interface desktop responsive existante : ce n’est pas encore un moteur de formulaire mobile natif.
+Sauvegarder Jeedom avant installation ; tester sur mobile après mise à jour.

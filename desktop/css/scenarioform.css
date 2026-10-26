@@ -10,10 +10,20 @@
 }
 
 .scenarioform-toolbar {
-    min-height: 44px;
-    margin-bottom: 12px;
-    padding-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
     border-bottom: 1px solid var(--sf-border);
+}
+
+.scenarioform-toolbar-title {
+    flex: 0 0 auto;
+    margin: 0;
+    padding: 0;
+    border-bottom: 0;
 }
 
 .scenarioform-toolbar-actions,
@@ -51,7 +61,8 @@
 }
 
 .scenarioform-workspace {
-    max-width: 1100px;
+    width: 100%;
+    max-width: none;
 }
 
 .scenarioform-request.list-group-item {
@@ -83,6 +94,18 @@
     justify-content: space-between;
     gap: 8px;
     margin-bottom: 4px;
+}
+
+.scenarioform-request-heading > strong {
+    display: block;
+    overflow: hidden;
+    min-width: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.scenarioform-request-heading .scenarioform-status {
+    flex: 0 0 auto;
 }
 
 .scenarioform-request small {
@@ -129,9 +152,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-direction: column;
-    min-height: 150px;
-    padding: 28px;
+    flex-direction: row;
+    min-height: 58px;
+    padding: 12px 16px;
     border: 1px dashed var(--sf-border);
     border-radius: var(--sf-radius);
     color: var(--sf-muted);
@@ -139,14 +162,14 @@
 }
 
 .scenarioform-empty-state i {
-    margin-bottom: 10px;
+    margin: 0 10px 0 0;
     color: var(--sf-accent);
     font-size: 25px;
     opacity: .75;
 }
 
 .scenarioform-empty-state strong {
-    margin-bottom: 4px;
+    margin: 0 6px 0 0;
     color: inherit;
     font-size: 15px;
 }
@@ -225,6 +248,28 @@
     min-width: 0;
 }
 
+.scenarioform-form-active-icon,
+.scenarioform-form-active-badge {
+    display: none;
+}
+
+.scenarioform-form-active-icon {
+    color: var(--sf-accent);
+    font-size: 16px;
+}
+
+.scenarioform-form-active-badge {
+    padding: 3px 8px;
+    border: 1px solid var(--sf-accent);
+    border-radius: 999px;
+    background: var(--sf-accent);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
 .scenarioform-form-drag-handle {
     color: var(--sf-muted);
     cursor: grab;
@@ -257,9 +302,25 @@
 .scenarioform-form-choice.active,
 .scenarioform-form-choice.active:hover,
 .scenarioform-form-choice.active:focus {
-    border-left: 3px solid var(--sf-accent);
-    background: rgba(51, 122, 183, .08);
+    border: 1px solid var(--sf-accent);
+    border-left: 6px solid var(--sf-accent);
+    background: rgba(51, 122, 183, .18);
+    box-shadow: inset 0 0 0 1px rgba(51, 122, 183, .14), 0 2px 7px rgba(0, 0, 0, .09);
     color: inherit;
+}
+
+.scenarioform-form-choice.active .scenarioform-form-active-icon,
+.scenarioform-form-choice.active .scenarioform-form-active-badge {
+    display: inline-block;
+}
+
+.scenarioform-form-choice.active .scenarioform-form-choice-main > strong {
+    font-weight: 800;
+}
+
+.scenarioform-form-choice.active .text-muted {
+    color: inherit !important;
+    opacity: .82;
 }
 
 .scenarioform-form-actions {
@@ -384,9 +445,10 @@
 
 .scenarioform-history-item-header {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
-    gap: 12px;
+    flex-wrap: wrap;
+    gap: 8px 12px;
     margin: -2px 0 10px;
     padding-bottom: 8px;
     border-bottom: 1px solid var(--sf-border);
@@ -438,8 +500,100 @@
 
 .scenarioform-history-actions {
     display: flex;
+    flex: 0 0 100%;
+    flex-wrap: wrap;
     gap: 6px;
-    margin-top: 12px;
+    margin-top: 4px;
+    margin-left: 0;
+}
+
+.scenarioform-history-item-heading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.scenarioform-history-summary {
+    flex: 1 1 520px;
+    min-width: 0;
+}
+
+.scenarioform-history-summary-primary,
+.scenarioform-history-summary-meta,
+.scenarioform-history-summary-secondary {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+    min-width: 0;
+}
+
+.scenarioform-history-summary-primary {
+    font-size: 14px;
+}
+
+.scenarioform-history-title-value {
+    font-weight: 600;
+}
+
+.scenarioform-history-summary-primary > * + *::before,
+.scenarioform-history-summary-meta > * + *::before {
+    content: "·";
+    margin-right: 10px;
+    color: var(--sf-muted);
+}
+
+.scenarioform-history-summary-meta {
+    margin-top: 6px;
+    color: var(--sf-muted);
+    font-size: 12px;
+}
+
+.scenarioform-history-summary-secondary {
+    margin-top: 4px;
+    color: var(--sf-muted);
+    font-size: 12px;
+}
+
+.scenarioform-history-summary-secondary span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.scenarioform-history-launch-status.is-success {
+    color: #2e7d32;
+}
+
+.scenarioform-history-details {
+    padding-top: 4px;
+}
+
+.scenarioform-result-document { max-height: 70vh; overflow: auto; padding: 0 8px; }
+.scenarioform-result-document h3 { margin-top: 0; }
+.scenarioform-result-document dt { margin-top: 8px; }
+.scenarioform-result-table { margin: 8px 0 16px; }
+.scenarioform-result-table th { white-space: nowrap; }
+.scenarioform-result-table td,
+.scenarioform-result-table th { vertical-align: middle !important; }
+
+.scenarioform-field-scenario-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.scenarioform-field-scenario-actions .form-control {
+    width: auto;
+    min-width: 220px;
+}
+
+.scenarioform-field-destination-label {
+    color: var(--sf-muted);
+    font-size: 12px;
+    font-weight: 600;
 }
 
 .scenarioform-form-editor {
@@ -476,9 +630,19 @@
 }
 
 .scenarioform-entry-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px 18px;
     margin-bottom: 16px;
     padding-bottom: 11px;
     border-bottom: 1px solid var(--sf-border);
+}
+
+.scenarioform-entry-header-copy {
+    flex: 1 1 260px;
+    min-width: 0;
 }
 
 .scenarioform-entry-header h4 {
@@ -524,9 +688,19 @@
     align-items: center;
     flex-wrap: wrap;
     gap: 7px;
-    margin-top: 20px;
-    padding-top: 14px;
-    border-top: 1px solid var(--sf-border);
+    margin-left: auto;
+}
+
+#scenarioform-latest-response-actions {
+    display: contents;
+}
+
+.scenarioform-latest-response-details {
+    max-width: 920px;
+    margin-top: 12px;
+    padding: 12px 14px;
+    border-left: 3px solid var(--sf-accent);
+    background: var(--sf-surface);
 }
 
 #scenarioform-history-zone {
@@ -535,13 +709,394 @@
 
 .scenarioform-history-header {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
-    gap: 12px;
+    flex-wrap: wrap;
+    gap: 10px 16px;
 }
 
 .scenarioform-history-header h4 {
-    margin-top: 0;
+    margin: 0;
+}
+
+.scenarioform-history-count {
+    color: var(--sf-muted);
+    font-size: .85em;
+    font-weight: normal;
+}
+
+.scenarioform-history-summary-panel {
+    max-width: 920px;
+    margin: 14px 0;
+    padding: 14px;
+    border: 1px solid var(--sf-border);
+    border-radius: var(--sf-radius);
+    background: var(--sf-surface);
+}
+
+.scenarioform-summary-toolbar,
+.scenarioform-summary-custom-period,
+.scenarioform-summary-distribution,
+.scenarioform-summary-alerts li {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.scenarioform-summary-toolbar {
+    justify-content: space-between;
+}
+
+.scenarioform-summary-toolbar label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 0 0 auto;
+    font-weight: normal;
+}
+
+.scenarioform-summary-toolbar .form-control {
+    width: auto;
+}
+
+.scenarioform-summary-metrics {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.scenarioform-summary-metric {
+    padding: 10px 8px;
+    border: 1px solid var(--sf-border);
+    border-radius: 6px;
+    background: var(--sf-card-bg, #fff);
+    color: inherit;
+    text-align: left;
+}
+
+.scenarioform-summary-metric:hover,
+.scenarioform-summary-metric:focus,
+.scenarioform-summary-metric.active {
+    border-color: var(--sf-accent);
+    background: rgba(51, 122, 183, .08);
+}
+
+.scenarioform-summary-metric.is-alert strong {
+    color: var(--sf-danger);
+}
+
+.scenarioform-summary-metric strong,
+.scenarioform-summary-metric span {
+    display: block;
+}
+
+.scenarioform-summary-metric strong {
+    font-size: 19px;
+}
+
+.scenarioform-summary-metric span {
+    color: var(--sf-muted);
+    font-size: 11px;
+}
+
+.scenarioform-summary-section {
+    margin-top: 13px;
+    padding-top: 11px;
+    border-top: 1px solid var(--sf-border);
+}
+
+.scenarioform-stat-kpis {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.scenarioform-stat-kpis > div {
+    padding: 9px 10px;
+    border: 1px solid var(--sf-border);
+    border-radius: 5px;
+    background: var(--sf-card-bg, #fff);
+}
+
+.scenarioform-stat-kpis strong,
+.scenarioform-stat-kpis span {
+    display: block;
+}
+
+.scenarioform-trend-alert {
+    margin-top: 8px;
+    padding: 8px 10px;
+    border-radius: 4px;
+    background: rgba(92, 184, 92, .1);
+    color: var(--sf-success);
+}
+
+.scenarioform-trend-alert.is-warning {
+    background: rgba(217, 83, 79, .1);
+    color: var(--sf-danger);
+}
+
+.scenarioform-comparison-table {
+    margin: 8px 0 0;
+}
+
+.scenarioform-comparison-table th,
+.scenarioform-comparison-table td {
+    vertical-align: middle !important;
+}
+
+.scenarioform-comparison-table .is-up,
+.scenarioform-field-stat dd.is-up {
+    color: var(--sf-success);
+    font-weight: bold;
+}
+
+.scenarioform-comparison-table .is-down,
+.scenarioform-field-stat dd.is-down {
+    color: var(--sf-danger);
+    font-weight: bold;
+}
+
+.scenarioform-stat-rankings {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.scenarioform-stat-rankings > div {
+    min-width: 0;
+}
+
+.scenarioform-stat-kpis strong {
+    font-size: 17px;
+}
+
+.scenarioform-stat-kpis span {
+    margin-top: 2px;
+    color: var(--sf-muted);
+    font-size: 11px;
+}
+
+.scenarioform-stat-evolution {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    height: 145px;
+    margin-top: 10px;
+    border-bottom: 1px solid var(--sf-border);
+}
+
+.scenarioform-stat-evolution > div {
+    display: flex;
+    flex: 1 1 0;
+    align-items: center;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-width: 0;
+    height: 100%;
+}
+
+.scenarioform-stat-evolution > div > i {
+    position: relative;
+    display: block;
+    width: min(26px, 72%);
+    min-height: 3px;
+    overflow: hidden;
+    border-radius: 3px 3px 0 0;
+    background: var(--sf-accent);
+}
+
+.scenarioform-stat-evolution > div > i span {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: var(--sf-danger);
+}
+
+.scenarioform-stat-evolution small {
+    margin-top: 4px;
+    color: var(--sf-muted);
+    font-size: 9px;
+    white-space: nowrap;
+}
+
+.scenarioform-stat-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    margin-top: 7px;
+    color: var(--sf-muted);
+    font-size: 11px;
+}
+
+.scenarioform-stat-legend i {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    margin-right: 3px;
+    border-radius: 2px;
+}
+
+.scenarioform-stat-legend .is-execution { background: var(--sf-accent); }
+.scenarioform-stat-legend .is-incident { background: var(--sf-danger); }
+
+.scenarioform-field-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 9px;
+}
+
+.scenarioform-field-stat {
+    min-width: 0;
+    padding: 10px;
+    border: 1px solid var(--sf-border);
+    border-radius: 5px;
+    background: var(--sf-card-bg, #fff);
+}
+
+.scenarioform-field-stat header strong,
+.scenarioform-field-stat header span {
+    display: block;
+}
+
+.scenarioform-field-stat header span {
+    color: var(--sf-muted);
+    font-size: 10px;
+}
+
+.scenarioform-field-stat dl {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    margin: 9px 0 0;
+}
+
+.scenarioform-field-stat dl div {
+    min-width: 0;
+}
+
+.scenarioform-field-stat dt {
+    color: var(--sf-muted);
+    font-size: 10px;
+    font-weight: normal;
+}
+
+.scenarioform-field-stat dd {
+    margin: 1px 0 0;
+    font-weight: bold;
+    overflow-wrap: anywhere;
+}
+
+.scenarioform-field-frequency {
+    margin: 8px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.scenarioform-field-frequency li {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 3px 8px;
+    padding: 3px 0;
+}
+
+.scenarioform-field-frequency li > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.scenarioform-field-frequency li > strong {
+    font-size: 10px;
+}
+
+.scenarioform-field-frequency li > i {
+    grid-column: 1 / -1;
+    height: 3px;
+    overflow: hidden;
+    border-radius: 2px;
+    background: rgba(127, 127, 127, .15);
+}
+
+.scenarioform-field-frequency li > i span {
+    display: block;
+    height: 100%;
+    background: var(--sf-accent);
+}
+
+.scenarioform-summary-distribution {
+    margin-top: 7px;
+}
+
+.scenarioform-summary-distribution-item {
+    padding: 3px 7px;
+    border-radius: 10px;
+    background: rgba(127, 127, 127, .12);
+    font-size: 11px;
+}
+
+.scenarioform-summary-distribution-item.is-accepted { color: var(--sf-success); }
+.scenarioform-summary-distribution-item.is-warning { color: #b06b00; }
+.scenarioform-summary-distribution-item.is-rejected,
+.scenarioform-summary-distribution-item.is-error,
+.scenarioform-summary-distribution-item.is-timeout { color: var(--sf-danger); }
+
+.scenarioform-summary-alerts ul {
+    margin: 7px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.scenarioform-summary-alerts li {
+    justify-content: space-between;
+    padding: 5px 0;
+    border-top: 1px solid rgba(127, 127, 127, .12);
+}
+
+.scenarioform-summary-alerts p {
+    margin: 7px 0 0;
+}
+
+.scenarioform-history-header-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.scenarioform-history-filter-label,
+.scenarioform-history-search-label,
+.scenarioform-history-period-label {
+    margin: 0;
+    font-weight: normal;
+}
+
+.scenarioform-history-period-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.scenarioform-history-filter-label .form-control {
+    width: 145px;
+}
+
+.scenarioform-history-search-label .form-control {
+    width: 190px;
+}
+
+.scenarioform-history-duration {
+    display: inline-block;
+    margin-left: 8px;
+    color: var(--sf-muted);
+    font-size: 11px;
+    white-space: nowrap;
 }
 
 #scenarioform-validation-message,
@@ -558,6 +1113,26 @@
     background: var(--sf-card-bg, #fff);
 }
 
+.scenarioform-execution-summary {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 5px;
+    max-width: 920px;
+    margin: 0 0 10px;
+    padding: 8px 11px;
+    border-left: 3px solid var(--sf-success);
+    background: rgba(60, 140, 64, .08);
+}
+
+.scenarioform-execution-summary > i {
+    color: var(--sf-success);
+}
+
+.scenarioform-execution-summary-separator {
+    color: var(--sf-muted);
+}
+
 .scenarioform-live-results-title {
     margin-bottom: 8px;
 }
@@ -566,16 +1141,6 @@
     margin-bottom: 0;
 }
 
-
-.scenarioform-history-toolbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin: 10px 0 12px;
-    color: var(--sf-muted);
-    font-size: 12px;
-}
 
 .scenarioform-field-error {
     margin-top: 5px;
@@ -588,7 +1153,8 @@
     }
 
     .scenarioform-toolbar {
-        min-height: 0;
+        align-items: stretch;
+        flex-direction: column;
     }
 
     .scenarioform-toolbar .pull-right {
@@ -599,6 +1165,16 @@
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         width: 100%;
+    }
+
+    .scenarioform-empty-state {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .scenarioform-empty-state i,
+    .scenarioform-empty-state strong {
+        margin: 0 0 4px;
     }
 
     .scenarioform-mobile-management-toggle {
@@ -729,6 +1305,8 @@
     .scenarioform-entry-actions {
         display: grid;
         grid-template-columns: 1fr;
+        width: 100%;
+        margin-left: 0;
     }
 
     .scenarioform-entry-actions .btn {
@@ -764,18 +1342,75 @@
         overflow-wrap: anywhere;
     }
 
-    .scenarioform-history-toolbar {
+    .scenarioform-history-header,
+    .scenarioform-history-header-actions {
         align-items: stretch;
         flex-direction: column;
+        width: 100%;
     }
 
-    .scenarioform-history-toolbar .btn {
+    .scenarioform-summary-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .scenarioform-stat-kpis,
+    .scenarioform-field-stat-grid,
+    .scenarioform-stat-rankings {
+        grid-template-columns: 1fr;
+    }
+
+    .scenarioform-summary-toolbar label,
+    .scenarioform-history-period-label,
+    .scenarioform-summary-custom-period {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .scenarioform-summary-custom-period .form-control {
+        flex: 1 1 120px;
+    }
+
+    .scenarioform-history-header-actions {
+        margin-left: 0;
+    }
+
+    .scenarioform-history-header-actions .btn,
+    .scenarioform-history-sort-label .form-control,
+    .scenarioform-history-filter-label .form-control,
+    .scenarioform-history-search-label .form-control,
+    .scenarioform-history-period-label .form-control {
+        width: 100%;
         min-height: 44px;
     }
 
     .scenarioform-history-actions {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .scenarioform-history-summary-primary,
+    .scenarioform-history-summary-meta,
+    .scenarioform-history-summary-secondary {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .scenarioform-history-summary-primary > * + *::before,
+    .scenarioform-history-summary-meta > * + *::before {
+        content: none;
+    }
+
+    .scenarioform-history-summary-secondary span {
+        overflow: visible;
+        white-space: normal;
+    }
+
+    .scenarioform-field-scenario-actions,
+    .scenarioform-field-scenario-actions .form-control,
+    .scenarioform-field-scenario-actions .btn {
+        width: 100%;
     }
 }
 
@@ -793,9 +1428,48 @@
     font-weight: normal;
 }
 .scenarioform-user-mode .scenarioform-mobile-admin-action,
-.scenarioform-user-mode .scenarioform-danger-action,
-.scenarioform-user-mode #bt_removeHistoryResponse,
-.scenarioform-user-mode #bt_clearFormHistory,
-.scenarioform-user-mode .scenarioform-history-remove {
+.scenarioform-user-mode .scenarioform-danger-action {
     display: none !important;
 }
+
+.scenarioform-history-sort-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-weight: normal;
+}
+
+.scenarioform-history-sort-label .form-control {
+    width: auto;
+}
+.scenarioform-report-overview {
+    margin: 12px 0;
+    padding: 12px 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.scenarioform-report-overview h4 { margin-top: 0; }
+.scenarioform-report-lines { margin: 12px 0 0; padding-left: 22px; }
+.scenarioform-report-lines li { margin-bottom: 5px; overflow-wrap: anywhere; }
+
+/* Correctif temporaire portrait : evite le chevauchement de la barre
+   Requetes / Gerer / Retour avec les premieres requetes.
+   Valeur 160px validee dans Chrome DevTools sur cette installation. */
+@media (max-width: 767px) {
+    #div_scenarioformList {
+        margin-top: 160px !important;
+    }
+}
+
+/* Identifiant technique permanent, distinct du numéro d’historique */
+.scenarioform-history-technical-id { display: inline-block; margin-left: 10px; font-size: 0.85em; color: #666; font-weight: 500; }
+
+/* r109 : regroupement de l'historique selon le champ de tri actif */
+.scenarioform-history-group { border: 1px solid #dce2e8; border-radius: 6px; margin: 10px 0; overflow: hidden; }
+.scenarioform-history-group-header { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; padding: 12px; background: #f5f7f9; }
+.scenarioform-history-group-header > strong { flex: 1; min-width: 120px; overflow-wrap: anywhere; }
+.scenarioform-history-group-count { color: #596673; }
+.scenarioform-history-group-items { padding: 8px 12px; }
+.scenarioform-history-group-items[hidden] { display: none !important; }

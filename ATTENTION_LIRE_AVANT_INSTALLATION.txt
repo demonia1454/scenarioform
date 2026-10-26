@@ -1,0 +1,17 @@
+CORRECTIF DE DEVELOPPEMENT — NE PAS INSTALLER SEUL EN PRODUCTION
+
+Le bouton Supprimer déclenche le scénario 107 au lieu d'effacer directement la réponse.
+Le callback authentifié supprime l'association SQL et la réponse uniquement si le 107 renvoie accepted.
+
+PRECONDITIONS ABSOLUMENT NECESSAIRES :
+1. Ajouter deleteById dans GoogleCalendar.php et GoogleCalendarCli.php.
+2. Modifier le scénario 108 : suppression par ID exact, résultat structuré X_resultat_108 ; ne PAS supprimer l'association SQL dans le 108.
+3. Modifier le scénario 107 : en cas de Suppression, ne PAS lancer 116, vérifier X_resultat_108, puis appeler sendResult(accepted) uniquement si success=true, operation=Suppression, response_id identique et google_deleted=true.
+4. En cas d'échec, envoyer sendResult(error) et NE JAMAIS accepted.
+5. Sauvegarder la base Jeedom et le plugin ; tester sur rendez-vous fictif.
+
+ATTENTION : le callback 107 fourni dans la conversation n'applique PAS ces règles. Installer ce plugin sans adapter 107 et 108 peut laisser une suppression en attente.
+
+Le tri de l'historique n'est PAS corrigé dans ce paquet. Critère du formulaire au premier chargement, puis choix actif de session : exigence retenue pour un correctif séparé.
+
+Contrôles statiques : syntaxe PHP des deux fichiers modifiés vérifiée. Aucun test réel Jeedom/Google réalisé.

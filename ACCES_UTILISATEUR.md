@@ -23,10 +23,12 @@ L’utilisateur peut :
 - saisir et valider les valeurs ;
 - lancer les scénarios pour lesquels il possède le droit d’exécution ;
 - suivre le retour métier attendu ;
-- consulter et reprendre ses propres saisies.
+- consulter, reprendre et supprimer ses propres saisies ;
+- vider uniquement son propre historique pour un formulaire.
 
 Il ne peut pas créer, modifier, réorganiser ou supprimer les requêtes,
-formulaires, champs, associations, scénarios ou éléments d’historique.
+formulaires, champs, associations ou scénarios. Il ne peut jamais consulter
+ni supprimer l’historique d’un autre utilisateur.
 
 Les réponses antérieures à la r41 ne possèdent pas d’utilisateur propriétaire :
 elles restent visibles uniquement des administrateurs.

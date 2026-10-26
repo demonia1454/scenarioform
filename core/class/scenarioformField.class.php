@@ -5,6 +5,7 @@ class scenarioformField
     private ?int $id = null;
 
     private ?int $form_id = null;
+    private ?int $scenario_id = null;
 
     private string $name = '';
 
@@ -57,6 +58,17 @@ class scenarioformField
     public function setFormId(?int $formId): self
     {
         $this->form_id = $formId;
+        return $this;
+    }
+
+    public function getScenarioId(): ?int
+    {
+        return $this->scenario_id;
+    }
+
+    public function setScenarioId(?int $scenarioId): self
+    {
+        $this->scenario_id = $scenarioId;
         return $this;
     }
 
@@ -267,25 +279,84 @@ class scenarioformField
         return $fields;
     }
 
+    public static function allByFormScenario(int $formId, int $scenarioId): array
+    {
+        $fields = DB::Prepare(
+            'SELECT * FROM scenarioform_field
+             WHERE form_id = :form_id AND scenario_id = :scenario_id
+             ORDER BY displayOrder ASC, id ASC',
+            ['form_id' => $formId, 'scenario_id' => $scenarioId],
+            DB::FETCH_TYPE_ALL,
+            PDO::FETCH_CLASS,
+            self::class
+        );
+        if (!is_array($fields)) {
+            return [];
+        }
+        foreach ($fields as $field) {
+            $field->initialize();
+        }
+        return $fields;
+    }
+
     /**
      * Prochain ordre disponible pour un nouveau champ du formulaire.
      *
      * Le calcul est volontairement réalisé côté serveur : l'interface peut
      * afficher cette valeur, mais elle ne doit pas être la source d'autorité.
      */
-    public static function nextDisplayOrder(int $formId): int
+    public static function nextDisplayOrder(int $formId, ?int $scenarioId = null): int
     {
+        $scenarioClause = $scenarioId === null
+            ? 'scenario_id IS NULL'
+            : 'scenario_id = :scenario_id';
+        $params = ['form_id' => $formId];
+        if ($scenarioId !== null) {
+            $params['scenario_id'] = $scenarioId;
+        }
         $row = DB::Prepare(
             '
             SELECT COALESCE(MAX(displayOrder), 0) AS max_order
             FROM scenarioform_field
             WHERE form_id = :form_id
+              AND ' . $scenarioClause . '
             ',
-            ['form_id' => $formId],
+            $params,
             DB::FETCH_TYPE_ROW
         );
 
         return intval($row['max_order'] ?? 0) + 1;
+    }
+
+    /** Place un champ à la position demandée et numérote tous les champs de 1 à N. */
+    public static function renumber(int $formId, ?int $scenarioId, ?int $movedFieldId = null, ?int $requestedOrder = null): void
+    {
+        $fields = $scenarioId === null
+            ? array_values(array_filter(self::allByForm($formId), static fn($field) => $field->getScenarioId() === null))
+            : self::allByFormScenario($formId, $scenarioId);
+
+        if ($movedFieldId !== null && $requestedOrder !== null) {
+            $moved = null;
+            foreach ($fields as $index => $field) {
+                if ($field->getId() === $movedFieldId) {
+                    $moved = $field;
+                    array_splice($fields, $index, 1);
+                    break;
+                }
+            }
+            if ($moved !== null) {
+                array_splice($fields, max(0, min(count($fields), $requestedOrder - 1)), 0, [$moved]);
+            }
+        }
+
+        foreach ($fields as $index => $field) {
+            if ($field->getDisplayOrder() !== $index + 1) {
+                DB::Prepare(
+                    'UPDATE scenarioform_field SET displayOrder = :display_order WHERE id = :id',
+                    ['display_order' => $index + 1, 'id' => $field->getId()]
+                );
+            }
+        }
     }
 
     /************************

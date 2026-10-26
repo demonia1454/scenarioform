@@ -6,8 +6,8 @@ class scenarioformFormScenario
     private ?int $form_id = null;
     private ?int $scenario_id = null;
     private int $displayOrder = 0;
-    private bool $isEnable = true;
-    private bool $expectResult = true;
+    private int $isEnable = 1;
+    private int $expectResult = 1;
     private ?string $created = null;
     private ?string $updated = null;
 
@@ -25,8 +25,8 @@ class scenarioformFormScenario
     public function getFormId(): ?int { return $this->form_id; }
     public function getScenarioId(): ?int { return $this->scenario_id; }
     public function getDisplayOrder(): int { return $this->displayOrder; }
-    public function getIsEnable(): bool { return $this->isEnable; }
-    public function getExpectResult(): bool { return $this->expectResult; }
+    public function getIsEnable(): int { return $this->isEnable; }
+    public function getExpectResult(): int { return $this->expectResult; }
     public function getCreated(): ?string { return $this->created; }
     public function getUpdated(): ?string { return $this->updated; }
 
@@ -34,8 +34,8 @@ class scenarioformFormScenario
     public function setFormId(?int $formId): self { $this->form_id = $formId; return $this; }
     public function setScenarioId(?int $scenarioId): self { $this->scenario_id = $scenarioId; return $this; }
     public function setDisplayOrder(int $order): self { $this->displayOrder = $order; return $this; }
-    public function setIsEnable(bool $enabled): self { $this->isEnable = $enabled; return $this; }
-    public function setExpectResult(bool $expected): self { $this->expectResult = $expected; return $this; }
+    public function setIsEnable(bool $enabled): self { $this->isEnable = $enabled ? 1 : 0; return $this; }
+    public function setExpectResult(bool $expected): self { $this->expectResult = $expected ? 1 : 0; return $this; }
     public function setCreated(?string $created): self { $this->created = $created; return $this; }
     public function setUpdated(?string $updated): self { $this->updated = $updated; return $this; }
 

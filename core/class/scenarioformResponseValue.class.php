@@ -7,6 +7,9 @@ class scenarioformResponseValue
     private ?int $responseId = null;
 
     private ?int $fieldId = null;
+    private ?string $fieldNameSnapshot = null;
+    private ?string $fieldLabelSnapshot = null;
+    private ?string $fieldTypeSnapshot = null;
 
     private ?string $value = null;
 
@@ -64,6 +67,10 @@ class scenarioformResponseValue
         $this->fieldId = $fieldId;
         return $this;
     }
+
+    public function setFieldNameSnapshot(?string $value): self { $this->fieldNameSnapshot = $value; return $this; }
+    public function setFieldLabelSnapshot(?string $value): self { $this->fieldLabelSnapshot = $value; return $this; }
+    public function setFieldTypeSnapshot(?string $value): self { $this->fieldTypeSnapshot = $value; return $this; }
 
 
     public function getValue(): ?string
@@ -150,6 +157,9 @@ public function save(): bool
                 (
                     response_id,
                     field_id,
+                    field_name_snapshot,
+                    field_label_snapshot,
+                    field_type_snapshot,
                     value,
                     created,
                     updated
@@ -158,6 +168,9 @@ public function save(): bool
                 (
                     :response_id,
                     :field_id,
+                    :field_name_snapshot,
+                    :field_label_snapshot,
+                    :field_type_snapshot,
                     :value,
                     :created,
                     :updated
@@ -167,6 +180,9 @@ public function save(): bool
             $params = [
                 'response_id' => $this->responseId,
                 'field_id'    => $this->fieldId,
+                'field_name_snapshot' => $this->fieldNameSnapshot,
+                'field_label_snapshot' => $this->fieldLabelSnapshot,
+                'field_type_snapshot' => $this->fieldTypeSnapshot,
                 'value'       => $this->value,
                 'created'     => $this->created,
                 'updated'     => $this->updated
@@ -185,6 +201,9 @@ public function save(): bool
                 SET
                     response_id = :response_id,
                     field_id = :field_id,
+                    field_name_snapshot = :field_name_snapshot,
+                    field_label_snapshot = :field_label_snapshot,
+                    field_type_snapshot = :field_type_snapshot,
                     value = :value,
                     updated = :updated
                 WHERE id = :id
@@ -194,6 +213,9 @@ public function save(): bool
                 'id'          => $this->id,
                 'response_id' => $this->responseId,
                 'field_id'    => $this->fieldId,
+                'field_name_snapshot' => $this->fieldNameSnapshot,
+                'field_label_snapshot' => $this->fieldLabelSnapshot,
+                'field_type_snapshot' => $this->fieldTypeSnapshot,
                 'value'       => $this->value,
                 'updated'     => $this->updated
             ];
