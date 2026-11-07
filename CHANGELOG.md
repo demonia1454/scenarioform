@@ -1,3 +1,15 @@
+## R121 — Placement du bouton « Créer une requête » (28/10/2026)
+
+- Bouton déplacé dans la barre d’actions, entre « Assistant premier formulaire » et « Retour ».
+- Fonctionnement et contrôle d’accès administrateur inchangés.
+- Aucun changement de données ou de logique métier.
+
+## R120 — Déplacement du bouton « Déplacer le formulaire » (28/10/2026)
+
+- Action déplacée vers la barre de gestion des formulaires.
+- Sélection de destination dans une fenêtre dédiée.
+- Aucun changement de schéma SQL.
+
 ## v2.2-beta3-r112 — Interface mobile et authentification HTTPS (23/10/2026)
 
 - Ajout de la page `mobile/php/scenarioform.php` et activation de la compatibilité mobile dans `plugin_info/info.json`.
@@ -865,3 +877,11 @@
 - L'ordre des groupes et des réponses suit le tri actif (tri initial du formulaire ou modification provisoire de session).
 - Les tris par date ou numéro conservent la liste classique. Les filtres, actions et export existants sont préservés.
 - Correctif non validé en environnement Jeedom ; les avertissements de suppression/calendrier de l'archive source restent applicables.
+
+## R117 — Déplacement d’un formulaire entre requêtes (candidate de test)
+- Ajout d’un sélecteur de requête de destination dans l’édition d’un formulaire.
+- Confirmation explicite avant déplacement et contrôle administrateur côté AJAX.
+- Conservation de l’identifiant, des champs, des associations aux scénarios et des réponses historiques.
+- Modification limitée à `request_id` et `displayOrder` du formulaire.
+- Vérification du rattachement d’origine pour éviter les déplacements sur une page périmée.
+- À valider sur une instance de test Jeedom avant utilisation en production.

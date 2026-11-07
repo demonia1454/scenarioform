@@ -378,6 +378,8 @@ public function setConfiguration($_key, $_value = null): self
 
         include_file('core', 'scenarioformFormScenario', 'class', 'scenarioform');
 
+        // E12 : un seul scénario principal par formulaire (contrôle côté serveur).
+        // Les formulaires sans scénario restent possibles pendant leur préparation.
         $normalized = [];
         foreach ($scenarioIds as $scenarioItem) {
             $scenarioId = intval(is_array($scenarioItem) ? ($scenarioItem['id'] ?? 0) : $scenarioItem);
@@ -390,6 +392,10 @@ public function setConfiguration($_key, $_value = null): self
             $normalized[$scenarioId] = is_array($scenarioItem)
                 ? !empty($scenarioItem['expect_result'])
                 : null;
+        }
+
+        if (count($normalized) > 1) {
+            throw new Exception('Un formulaire ne peut être associé qu’à un seul scénario principal');
         }
 
         DB::Prepare('START TRANSACTION', []);
@@ -476,6 +482,50 @@ public function setConfiguration($_key, $_value = null): self
             return ['field_transfer' => $fieldTransfer];
         } catch (Throwable $e) {
             DB::Prepare('ROLLBACK', []);
+            throw $e;
+        }
+    }
+
+    /**
+     * Remplace une seule association et transfère ses champs, sans toucher aux autres scénarios.
+     * La transaction garantit que le transfert et le remplacement sont atomiques.
+     */
+    public function replaceScenarioPreservingFields(int $sourceId, int $targetId): array
+    {
+        if ($this->id === null || $sourceId <= 0 || $targetId <= 0 || $sourceId === $targetId) {
+            throw new Exception('Identifiants de remplacement invalides');
+        }
+        if (scenario::byId($targetId) === null) {
+            throw new Exception('Scénario de destination introuvable');
+        }
+        include_file('core', 'scenarioformFormScenario', 'class', 'scenarioform');
+        $connection = DB::getConnection();
+        $connection->beginTransaction();
+        try {
+            $source = scenarioformFormScenario::byFormScenario((int) $this->id, $sourceId);
+            if ($source === null) {
+                throw new Exception('Le scénario à remplacer n’est pas associé à ce formulaire');
+            }
+            if (scenarioformFormScenario::byFormScenario((int) $this->id, $targetId) !== null) {
+                throw new Exception('Le scénario de destination est déjà associé à ce formulaire');
+            }
+            $statement = $connection->prepare(
+                'UPDATE scenarioform_field SET scenario_id = :target, updated = :updated
+                 WHERE form_id = :form AND scenario_id = :source'
+            );
+            $statement->execute([
+                'target' => $targetId, 'updated' => date('Y-m-d H:i:s'),
+                'form' => $this->id, 'source' => $sourceId
+            ]);
+            $count = $statement->rowCount();
+            $source->setScenarioId($targetId);
+            $source->save();
+            $connection->commit();
+            return ['count' => $count, 'source_scenario_id' => $sourceId, 'target_scenario_id' => $targetId];
+        } catch (Throwable $e) {
+            if ($connection->inTransaction()) {
+                $connection->rollBack();
+            }
             throw $e;
         }
     }

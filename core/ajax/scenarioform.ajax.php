@@ -32,8 +32,9 @@ if (!isConnect()) {
 
 $scenarioformAdminActions = [
     'getFormDetail', 'getScenarioList', 'createScenarioTemplate', 'createGuidedExample',
-    'saveRequest', 'createRequest', 'removeRequest', 'reorderForms',
-    'reorderFormScenarios', 'createForm', 'saveForm', 'removeForm',
+    'saveRequest', 'createRequest', 'removeRequest', 'reorderForms', 'reorderRequests',
+    'reorderFormScenarios', 'createForm', 'saveForm', 'replaceFormScenario', 'moveForm', 'removeForm',
+    'purgePreviousFormReports',
     'getField', 'saveField', 'addSelectOption', 'removeField', 'copyScenarioFields'
 ];
 $scenarioformAction = (string) ($_REQUEST['action'] ?? '');
@@ -268,14 +269,12 @@ case 'getForm':
         $scenarios = [];
         foreach ($form->getScenarioLinks() as $link) {
             $scenario = $link->getScenario();
-            if ($scenario === null || !$scenario->getIsActive()) {
-                continue;
-            }
             $scenarios[] = [
-                'id' => $scenario->getId(),
-                'name' => $scenario->getName(),
+                'id' => $link->getScenarioId(),
+                'name' => $scenario === null ? 'Scénario introuvable #' . $link->getScenarioId() : $scenario->getName(),
+                'orphan' => $scenario === null,
                 'expect_result' => $link->getExpectResult(),
-                'edit_url' => isConnect('admin')
+                'edit_url' => isConnect('admin') && $scenario !== null
                     ? 'index.php?v=d&p=scenario&id=' . intval($scenario->getId())
                     : null
             ];
@@ -923,7 +922,24 @@ case 'executeForm':
 
             if ($fieldType === 'datetime') {
 
-                $normalizedDateTime = str_replace('T', ' ', $fieldValue);
+                $normalizedDateTime = str_replace('T', ' ', (string) $fieldValue);
+
+                // Les variables Jeedom en lecture seule peuvent contenir des secondes
+                // ou une date au format français. Ne pas modifier les champs éditables.
+                if (($configuration['variableMode'] ?? 'transmit') === 'readonly'
+                    && !empty($configuration['initialVariable'])
+                    && trim($normalizedDateTime) !== '') {
+                    foreach (['!Y-m-d H:i:s', '!Y-m-d H:i', '!d/m/Y H:i:s', '!d/m/Y H:i'] as $sourceFormat) {
+                        $parsed = DateTimeImmutable::createFromFormat($sourceFormat, $normalizedDateTime);
+                        $errors = DateTimeImmutable::getLastErrors();
+                        if ($parsed !== false && ($errors === false ||
+                            ($errors['warning_count'] === 0 && $errors['error_count'] === 0))
+                            && $parsed->format(substr($sourceFormat, 1)) === $normalizedDateTime) {
+                            $normalizedDateTime = $parsed->format('Y-m-d H:i');
+                            break;
+                        }
+                    }
+                }
 
                 $datetime = DateTime::createFromFormat(
                     'Y-m-d H:i',
@@ -1567,15 +1583,16 @@ case 'createScenarioTemplate':
             throw new Exception('Formulaire introuvable');
         }
 
+        // Un formulaire ne peut avoir qu'un scénario associé. Refuser avant
+        // la création pour éviter de générer puis supprimer un scénario inutile.
+        if (count($form->getScenarios()) > 0) {
+            throw new Exception('Ce formulaire possède déjà un scénario associé. Remplacez-le depuis le formulaire si nécessaire.');
+        }
+
         $scenario = scenarioform::createScenarioTemplate($form, (string) init('name'));
 
         try {
-            $scenarioIds = [];
-            foreach ($form->getScenarios() as $associatedScenario) {
-                $scenarioIds[] = intval($associatedScenario->getId());
-            }
-            $scenarioIds[] = intval($scenario->getId());
-            $form->syncScenarios(array_values(array_unique($scenarioIds)));
+            $form->syncScenarios([intval($scenario->getId())]);
             DB::Prepare(
                 'UPDATE scenarioform_field
                  SET scenario_id = :scenario_id, updated = :updated
@@ -1942,6 +1959,46 @@ case 'removeRequest':
 
 break;
 
+case 'reorderRequests':
+    try {
+        $requestIds = init('requests', []);
+        if (!is_array($requestIds)) {
+            throw new Exception('Liste de requêtes invalide');
+        }
+        $requestsById = [];
+        foreach (scenarioformRequest::all() as $request) {
+            $requestsById[(int) $request->getId()] = $request;
+        }
+        $normalized = [];
+        foreach ($requestIds as $id) {
+            $id = filter_var($id, FILTER_VALIDATE_INT);
+            if ($id === false || $id <= 0 || !isset($requestsById[$id]) || in_array($id, $normalized, true)) {
+                throw new Exception('Liste de requêtes invalide');
+            }
+            $normalized[] = $id;
+        }
+        if (count($normalized) !== count($requestsById)) {
+            throw new Exception('La liste des requêtes est incomplète');
+        }
+        DB::Prepare('START TRANSACTION', []);
+        try {
+            foreach ($normalized as $index => $id) {
+                $requestsById[$id]->setDisplayOrder($index + 1);
+                if (!$requestsById[$id]->save()) {
+                    throw new Exception('Impossible de sauvegarder l’ordre des requêtes');
+                }
+            }
+            DB::Prepare('COMMIT', []);
+        } catch (Throwable $e) {
+            DB::Prepare('ROLLBACK', []);
+            throw $e;
+        }
+        ajax::success(['requests' => $normalized]);
+    } catch (Throwable $e) {
+        ajax::error($e->getMessage());
+    }
+break;
+
 case 'reorderForms':
     try {
         include_file('core', 'scenarioformForm', 'class', 'scenarioform');
@@ -2097,6 +2154,22 @@ case 'createForm':
 
 break;
 
+case 'replaceFormScenario':
+    try {
+        $form = scenarioformForm::byId(intval(init('form_id')));
+        if ($form === null) {
+            throw new Exception('Formulaire introuvable');
+        }
+        $result = $form->replaceScenarioPreservingFields(
+            intval(init('source_scenario_id')),
+            intval(init('target_scenario_id'))
+        );
+        ajax::success($result);
+    } catch (Throwable $e) {
+        ajax::error($e->getMessage());
+    }
+break;
+
 case 'saveForm':
 
     try {
@@ -2182,6 +2255,45 @@ case 'saveForm':
 
     }
 
+break;
+
+case 'moveForm':
+    try {
+        $formId = intval(init('id'));
+        $destinationId = intval(init('destination_request_id'));
+        $sourceId = intval(init('source_request_id'));
+        if ($formId <= 0 || $destinationId <= 0 || $sourceId <= 0) {
+            throw new Exception('Identifiants de déplacement invalides.');
+        }
+        $form = scenarioformForm::byId($formId);
+        $destination = scenarioformRequest::byId($destinationId);
+        if ($form === null || $destination === null) {
+            throw new Exception('Formulaire ou requête de destination introuvable.');
+        }
+        if (intval($form->getRequestId()) !== $sourceId) {
+            throw new Exception('La requête d’origine a changé : rechargez la page.');
+        }
+        if ($sourceId === $destinationId) {
+            throw new Exception('Le formulaire appartient déjà à cette requête.');
+        }
+        // Ne modifier que le rattachement et l'ordre : l'identifiant du
+        // formulaire et les réponses historiques restent intacts.
+        $form->setRequestId($destinationId);
+        $form->setDisplayOrder(scenarioformForm::nextDisplayOrder($destinationId));
+        if (!$form->save()) {
+            throw new Exception('Échec de sauvegarde du déplacement.');
+        }
+        log::add('scenarioform', 'info', 'Formulaire #' . $formId
+            . ' déplacé de la requête #' . $sourceId
+            . ' vers la requête #' . $destinationId);
+        ajax::success([
+            'id' => $formId,
+            'source_request_id' => $sourceId,
+            'request_id' => $destinationId
+        ]);
+    } catch (Throwable $e) {
+        ajax::error($e->getMessage());
+    }
 break;
 
 case 'removeForm':

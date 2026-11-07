@@ -1,0 +1,12 @@
+const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
+const source = fs.readFileSync(path.join(__dirname, '../desktop/js/scenarioform.js'), 'utf8');
+const start = source.indexOf("$(document).on('click.scenarioform', '#bt_createScenarioTemplate'");
+const end = source.indexOf('function showFormValues(', start);
+assert(start >= 0 && end > start, 'Gestionnaire de création du scénario modèle absent');
+const handler = source.slice(start, end);
+assert(handler.includes('loadRequestDetail(requestId, formId);'), 'La liste des formulaires doit être rafraîchie après création');
+assert(!handler.includes('loadRequestForm(requestId, formId);'), 'Un simple rafraîchissement du formulaire laisse le bandeau obsolète');
+assert(source.includes('loadRequestForm(detail.request.id, selectedForm ? selectedForm.id : forms[0].id);'), 'La sélection du formulaire doit être restaurée');
+console.log('Rafraîchissement après création de scénario modèle : contrôles statiques OK');

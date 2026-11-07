@@ -1,0 +1,14 @@
+'use strict';
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
+const source = fs.readFileSync(__dirname + '/../desktop/js/scenarioform_helpers.js', 'utf8');
+const context = vm.createContext({});
+vm.runInContext(source, context);
+assert.equal(context.scenarioformEscapeAttribute('a&"\'<b>'), 'a&amp;&quot;&#39;&lt;b&gt;');
+assert.equal(context.scenarioformEscapeAttribute(null), '');
+assert.equal(context.scenarioformBuildPlaceholder({type:'integer',configuration:{min:1,max:9}}), 'Entier entre 1 et 9');
+assert.equal(context.scenarioformBuildPlaceholder({type:'email'}), 'nom@exemple.fr');
+assert.equal(context.scenarioformBuildPlaceholder({type:'text', required:true}), 'Saisissez une valeur');
+assert.equal(context.scenarioformBuildPlaceholder({type:'decimal',configuration:{}}), 'Ex. 12.50');
+console.log('Tests utilitaires ScenarioForm OK');

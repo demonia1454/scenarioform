@@ -19,10 +19,12 @@ $scenarioformIsAdmin = isConnect('admin');
 
     <!-- Barre d'actions -->
     <div class="col-xs-12 scenarioform-toolbar">
-        <legend class="scenarioform-section-title scenarioform-toolbar-title">
-            <i class="fas fa-list"></i>
-            {{Requêtes}}
-        </legend>
+        <div class="scenarioform-toolbar-heading">
+            <legend class="scenarioform-section-title scenarioform-toolbar-title">
+                <i class="fas fa-list"></i>
+                {{Requêtes}}
+            </legend>
+        </div>
         <div class="pull-right scenarioform-toolbar-actions">
             <button class="btn btn-default btn-sm scenarioform-mobile-management-toggle"
                     id="bt_toggleMobileManagement"
@@ -31,14 +33,16 @@ $scenarioformIsAdmin = isConnect('admin');
                 <i class="fas fa-cog"></i>
                 <span>Gérer</span>
             </button>
-            <a class="btn btn-success btn-sm scenarioform-mobile-admin-action" id="bt_addScenarioForm">
-                <i class="fas fa-plus-circle"></i>
-                {{Nouvelle requête}}
-            </a>
             <a class="btn btn-primary btn-sm scenarioform-mobile-admin-action" id="bt_scenarioformAssistant">
                 <i class="fas fa-magic"></i>
                 {{Assistant premier formulaire}}
             </a>
+            <?php if ($scenarioformIsAdmin) { ?>
+            <button class="btn btn-success btn-sm" id="bt_addScenarioForm" type="button">
+                <i class="fas fa-plus-circle"></i>
+                {{Créer une requête}}
+            </button>
+            <?php } ?>
             <a class="btn btn-default btn-sm" id="bt_backScenarioForm">
                 <i class="fas fa-arrow-left"></i>
                 {{Retour}}
@@ -92,4 +96,7 @@ $scenarioformIsAdmin = isConnect('admin');
 
 </div>
 
+<?php include_file('desktop', 'scenarioform_helpers', 'js', 'scenarioform'); ?>
+<?php include_file('desktop', 'scenarioform_forms', 'js', 'scenarioform'); ?>
+<?php include_file('desktop', 'scenarioform_fields', 'js', 'scenarioform'); ?>
 <?php include_file('desktop', 'scenarioform', 'js', 'scenarioform'); ?>

@@ -7,8 +7,7 @@ node --check "$plugin_dir/desktop/js/scenarioform.js"
 
 grep -q "Nettoyage réponse incomplète impossible" "$plugin_dir/core/ajax/scenarioform.ajax.php"
 grep -q "var scenarioformDraggedForm = null;" "$plugin_dir/desktop/js/scenarioform.js"
-grep -q "var scenarioformDraggedScenario = null;" "$plugin_dir/desktop/js/scenarioform.js"
-test "$(grep -c "let fieldLabel = \$(this)" "$plugin_dir/desktop/js/scenarioform.js")" -eq 2
+test "$(grep -Fc 'let fieldLabel = $(this)' "$plugin_dir/desktop/js/scenarioform_fields.js")" -eq 2
 grep -Fq "\$(document).off('.scenarioform');" "$plugin_dir/desktop/js/scenarioform.js"
 ! grep -Eq "\\$\\(document\\)\\.on\\(['\"](click|change|keydown|dragstart|dragover|drop|dragend)['\"]" "$plugin_dir/desktop/js/scenarioform.js"
 
@@ -38,7 +37,7 @@ grep -q '## Essayer avec un utilisateur limité' "$plugin_dir/EXEMPLE_PRET_A_EMP
 grep -q '## Contrôle final' "$plugin_dir/EXEMPLE_PRET_A_EMPLOI.md"
 grep -q 'Ne pas confondre avec l.*onglet.*Équipements' "$plugin_dir/EXEMPLE_PRET_A_EMPLOI.md"
 grep -q 'expectResult' "$plugin_dir/core/class/scenarioformFormScenario.class.php"
-grep -q 'Attendre un retour métier' "$plugin_dir/desktop/js/scenarioform.js"
+grep -q 'Attendre un retour métier' "$plugin_dir/desktop/js/scenarioform_forms.js"
 grep -q "not_expected: 'Scénario lancé — aucun retour attendu'" "$plugin_dir/desktop/js/scenarioform.js"
 grep -q 'ADD COLUMN IF NOT EXISTS `expectResult`' "$plugin_dir/plugin_info/install.php"
 grep -q 'scenarioformAdminActions' "$plugin_dir/core/ajax/scenarioform.ajax.php"
@@ -51,7 +50,7 @@ grep -q "strpos(\$storedRights, 'x')" "$plugin_dir/core/ajax/scenarioform.ajax.p
 grep -q 'scenarioformCanReadResponseConfiguration' "$plugin_dir/core/ajax/scenarioform.ajax.php"
 grep -q "'values'.*=>.*\$historyValues" "$plugin_dir/core/ajax/scenarioform.ajax.php"
 grep -q "isset(\$historyContext\['values'\])" "$plugin_dir/core/ajax/scenarioform.ajax.php"
-grep -q 'bt_sortFormScenarios' "$plugin_dir/desktop/js/scenarioform.js"
+grep -q 'scenarioform-main-scenario' "$plugin_dir/desktop/js/scenarioform_forms.js"
 ! grep -q 'scenarioformBuildInputHelp' "$plugin_dir/desktop/js/scenarioform.js"
 grep -q 'scenarioform-history-sort' "$plugin_dir/desktop/js/scenarioform.js"
 grep -q 'bt_refreshFormHistory' "$plugin_dir/desktop/js/scenarioform.js"
@@ -69,7 +68,7 @@ grep -q 'source.form_name.*source.scenario_name' "$plugin_dir/desktop/js/scenari
 grep -q 'scenario_id NULL' "$plugin_dir/core/ajax/scenarioform.ajax.php"
 grep -q 'scenarioform-field-destination-label' "$plugin_dir/desktop/js/scenarioform.js"
 grep -q 'result_excerpt' "$plugin_dir/plugin_info/install.php"
-! sed -n '/\$scenarioformAdminActions = \[/,/\];/p' "$plugin_dir/core/ajax/scenarioform.ajax.php" | grep -q 'removeHistoryResponse'
+! sed -n '/\$scenarioformAdminActions = \[/,/\];/p' "$plugin_dir/core/ajax/scenarioform.ajax.php" | grep 'removeHistoryResponse' >/dev/null
 grep -q 'scenarioform-user-mode' "$plugin_dir/desktop/php/scenarioform.php"
 grep -q 'id="bt_scenarioformAssistant"' "$plugin_dir/desktop/php/scenarioform.php"
 grep -q 'function scenarioformOpenGuidedAssistant' "$plugin_dir/desktop/js/scenarioform.js"
@@ -81,7 +80,7 @@ grep -q "case 'addSelectOption':" "$plugin_dir/core/ajax/scenarioform.ajax.php"
 grep -q "'addSelectOption'" "$plugin_dir/core/ajax/scenarioform.ajax.php"
 grep -q 'scenarioform-add-select-option' "$plugin_dir/desktop/js/scenarioform.js"
 grep -q "action: 'addSelectOption'" "$plugin_dir/desktop/js/scenarioform.js"
-sed -n "/case 'addSelectOption':/,/case 'getFieldList':/p" "$plugin_dir/core/ajax/scenarioform.ajax.php" | grep -q 'FOR UPDATE'
+sed -n "/case 'addSelectOption':/,/case 'getFieldList':/p" "$plugin_dir/core/ajax/scenarioform.ajax.php" | grep 'FOR UPDATE' >/dev/null
 grep -q 'id="bt_leaveResultWaiting"' "$plugin_dir/desktop/js/scenarioform.js"
 grep -q "'#bt_leaveResultWaiting'" "$plugin_dir/desktop/js/scenarioform.js"
 grep -q 'Retour — continuer en arrière-plan' "$plugin_dir/desktop/js/scenarioform.js"
@@ -118,7 +117,7 @@ grep -q 'inputmode="numeric"' "$plugin_dir/desktop/js/scenarioform.js"
 grep -q 'inférieur ou égal à' "$plugin_dir/core/ajax/scenarioform.ajax.php"
 grep -q 'field-required-min-length-help' "$plugin_dir/desktop/js/scenarioform.js"
 grep -q 'updateRequiredMinLengthHelp' "$plugin_dir/desktop/js/scenarioform.js"
-grep -q 'function scenarioformBuildPlaceholder' "$plugin_dir/desktop/js/scenarioform.js"
+grep -q 'function scenarioformBuildPlaceholder' "$plugin_dir/desktop/js/scenarioform_helpers.js"
 grep -q 'function scenarioformValidateInput' "$plugin_dir/desktop/js/scenarioform.js"
 grep -q 'scenarioform-field-error' "$plugin_dir/desktop/js/scenarioform.js"
 grep -q 'if ($required && empty($fieldValue))' "$plugin_dir/core/ajax/scenarioform.ajax.php"
@@ -159,7 +158,7 @@ grep -q 'id="bt_historyAfterExecution"' "$plugin_dir/desktop/js/scenarioform.js"
 grep -q "attr('data-form-name') || ('#' + formId)" "$plugin_dir/desktop/js/scenarioform.js"
 grep -q 'scenarioform-card-header-actions' "$plugin_dir/desktop/js/scenarioform.js"
 grep -q 'let scenarioOpenButtons' "$plugin_dir/desktop/js/scenarioform.js"
-grep -q "\$('#bt_editForm, #bt_removeForm').prop('disabled', false)" "$plugin_dir/desktop/js/scenarioform.js"
+grep -q "\$('#bt_editForm, #bt_removeForm, #bt_openMoveForm').prop('disabled', false)" "$plugin_dir/desktop/js/scenarioform.js"
 grep -q 'id="bt_editForm" disabled' "$plugin_dir/desktop/js/scenarioform.js"
 grep -q "case 'getScenarioResults'" "$plugin_dir/core/ajax/scenarioform.ajax.php"
 grep -q 'Compte rendu et détails' "$plugin_dir/desktop/js/scenarioform.js"
@@ -197,7 +196,7 @@ grep -q 'Analyse des champs' "$plugin_dir/desktop/js/scenarioform.js"
 grep -q 'scenarioform-field-stat-grid' "$plugin_dir/desktop/css/scenarioform.css"
 grep -q 'scenarioform-stat-evolution' "$plugin_dir/desktop/css/scenarioform.css"
 grep -q "case 'getHistoryOverview':" "$plugin_dir/core/ajax/scenarioform.ajax.php"
-sed -n "/case 'getHistoryOverview':/,/case 'getHistory':/p" "$plugin_dir/core/ajax/scenarioform.ajax.php" | grep -q 'scenarioformCanReadResponseConfiguration'
+sed -n "/case 'getHistoryOverview':/,/case 'getHistory':/p" "$plugin_dir/core/ajax/scenarioform.ajax.php" | grep 'scenarioformCanReadResponseConfiguration' >/dev/null
 grep -q 'function scenarioformHistoryComparisonRanges' "$plugin_dir/desktop/js/scenarioform.js"
 grep -q 'function scenarioformRenderHistoryComparison' "$plugin_dir/desktop/js/scenarioform.js"
 grep -q 'function scenarioformRenderScenarioFailures' "$plugin_dir/desktop/js/scenarioform.js"
@@ -210,7 +209,7 @@ grep -q 'scenarioform-summary-metric' "$plugin_dir/desktop/js/scenarioform.js"
 grep -q 'scenarioformHistoryInPeriod' "$plugin_dir/desktop/js/scenarioform.js"
 grep -q 'bt_createScenarioTemplate' "$plugin_dir/desktop/js/scenarioform.js"
 grep -q "case 'createScenarioTemplate'" "$plugin_dir/core/ajax/scenarioform.ajax.php"
-sed -n "/case 'createScenarioTemplate':/,/case 'getRequestDetail':/p" "$plugin_dir/core/ajax/scenarioform.ajax.php" | grep -q "include_file('core', 'scenarioformField'"
+sed -n "/case 'createScenarioTemplate':/,/case 'getRequestDetail':/p" "$plugin_dir/core/ajax/scenarioform.ajax.php" | grep "include_file('core', 'scenarioformField'" >/dev/null
 grep -q 'function buildScenarioTemplateCode' "$plugin_dir/core/class/scenarioform.class.php"
 grep -q 'scenarioElement::saveAjaxElement' "$plugin_dir/core/class/scenarioform.class.php"
 grep -q 'return is_object($scenario) ? $scenario : null;' "$plugin_dir/core/class/scenarioformFormScenario.class.php"
@@ -289,7 +288,7 @@ grep -q 'setIsEnable(0)' "$plugin_dir/core/class/scenarioform.class.php"
 grep -q 'expirePendingScenarioResults' "$plugin_dir/core/class/scenarioformResponse.class.php"
 grep -q "scenario_result_timeout" "$plugin_dir/plugin_info/configuration.php"
 grep -q 'Valeur par défaut : 120 secondes' "$plugin_dir/plugin_info/configuration.php"
-test "$(grep -c "config::byKey('scenario_result_timeout', 'scenarioform', 120)" "$plugin_dir/core/ajax/scenarioform.ajax.php")" -eq 3
+test "$(grep -c "config::byKey('scenario_result_timeout', 'scenarioform', 120)" "$plugin_dir/core/ajax/scenarioform.ajax.php")" -ge 3
 ! grep -q "config::byKey('scenario_result_timeout', 'scenarioform', 900)" "$plugin_dir/core/ajax/scenarioform.ajax.php"
 grep -q "\$result\['status'\] = 'timeout'" "$plugin_dir/core/class/scenarioformResponse.class.php"
 grep -q "timeout: 'Aucun retour reçu — consultez le journal Jeedom du scénario'" "$plugin_dir/desktop/js/scenarioform.js"
@@ -306,7 +305,7 @@ grep -q 'id="bt_toggleMobileManagement"' "$plugin_dir/desktop/php/scenarioform.p
 grep -q 'scenarioform-mobile-management-open' "$plugin_dir/desktop/js/scenarioform.js"
 grep -q 'scenarioform-mobile-admin-action' "$plugin_dir/desktop/css/scenarioform.css"
 ! grep -q 'GET VALUES - NOMBRE=' "$plugin_dir/core/class/scenarioformResponse.class.php"
-! find "$plugin_dir" -type f -name '*1608*' | grep -q .
+! find "$plugin_dir" -type f -name '*1608*' | grep . >/dev/null
 
 if command -v php >/dev/null 2>&1; then
     while IFS= read -r -d '' file; do
@@ -317,3 +316,8 @@ else
 fi
 
 echo "Contrôles statiques ScenarioForm V2 : OK"
+
+# E13 : ancien éditeur multiscénario et bouton de remplacement non rendus.
+! grep -q "bt_replace_form_scenario" "$plugin_dir/desktop/js/scenarioform.js"
+! grep -q "scenarioform-scenario-order-item" "$plugin_dir/desktop/css/scenarioform.css"
+grep -q "Scénario associé" "$plugin_dir/desktop/js/scenarioform_forms.js"

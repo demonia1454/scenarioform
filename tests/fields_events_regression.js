@@ -1,0 +1,20 @@
+'use strict';
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
+const source = fs.readFileSync(__dirname + '/../desktop/js/scenarioform_fields.js', 'utf8');
+const handlers = new Map();
+let editArgs, confirmText, ajaxOptions, refreshArg;
+const list = {off(type, selector) {handlers.delete(type+selector); return this;}, on(type, selector, cb) {handlers.set(type+selector, cb); return this;}};
+const row = {data(k) {assert.equal(k,'id');return 12;}, attr(k) {assert.equal(k,'data-field-label');return 'Départ';}};
+const form = {attr(k) {assert.equal(k,'data-form-id');return '34';}};
+function $(arg) { if (arg === '#scenarioform-fields-list') return list; if(arg === '#div_scenarioform-form')return form; if(arg === 'button')return {closest(k){assert.equal(k,'tr');return row;}}; throw Error('Unexpected selector '+arg); }
+const ctx=vm.createContext({$,bootbox:{confirm(text,cb){confirmText=text;cb(true);}},scenarioformEscapeHtml:x=>x,loadFieldEdit:(...a)=>{editArgs=a;},loadFieldList:x=>{refreshArg=x;},jeedomUtils:{showAlert(){throw Error('Unexpected alert');}}, scenarioformAjax(){throw Error('Unexpected transport');}});
+ctx.$.ajax = options => {ajaxOptions=options; options.success({state:'ok'});};
+vm.runInContext(source,ctx);
+ctx.loadFieldList = x => {refreshArg=x;};
+ctx.scenarioformBindFieldsTableEvents();ctx.scenarioformBindFieldsTableEvents();
+assert.equal(handlers.size,2,'handlers must not accumulate');
+handlers.get('click.bt_editField').call('button');assert.deepEqual(Array.from(editArgs),[12,'34']);
+handlers.get('click.bt_removeField').call('button');assert.match(confirmText,/Départ/);assert.equal(ajaxOptions.data.action,'removeField');assert.equal(ajaxOptions.data.id,12);assert.equal(refreshArg,'34');
+console.log('Événements des champs : édition, suppression et liaisons idempotentes OK');

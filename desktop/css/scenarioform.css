@@ -19,6 +19,13 @@
     border-bottom: 1px solid var(--sf-border);
 }
 
+.scenarioform-toolbar-heading {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
 .scenarioform-toolbar-title {
     flex: 0 0 auto;
     margin: 0;
@@ -368,71 +375,6 @@
     border-radius: 3px;
     background: rgba(127, 127, 127, .12);
     color: inherit;
-}
-
-.scenarioform-scenario-order-item {
-    display: flex;
-    align-items: center;
-    min-height: 40px;
-    margin: 0;
-    padding: 7px 9px;
-    border-color: var(--sf-border);
-    background: transparent;
-    cursor: move;
-}
-
-#scenarioform-form-scenario-order {
-    overflow-y: auto;
-    max-height: 390px;
-    margin-bottom: 14px;
-    border: 1px solid var(--sf-border);
-    border-radius: var(--sf-radius);
-    background: var(--sf-surface);
-}
-
-.scenarioform-scenario-order-item + .scenarioform-scenario-order-item {
-    border-top: 1px solid var(--sf-border);
-}
-
-.scenarioform-scenario-order-item:has(.form-scenario-enabled:checked) {
-    background: rgba(51, 122, 183, .09);
-}
-
-.scenarioform-scenario-order-item > .fa-grip-vertical {
-    color: var(--sf-muted);
-    opacity: .65;
-}
-
-.scenarioform-scenario-label {
-    flex: 1;
-    margin: 0 10px;
-    cursor: pointer;
-    font-weight: 500;
-}
-
-.scenarioform-scenario-label input {
-    margin: 0 9px 0 0;
-    vertical-align: middle;
-}
-
-.scenarioform-scenario-order-item .pull-right {
-    display: inline-flex;
-    gap: 3px;
-}
-
-.scenarioform-scenario-order-item .btn {
-    opacity: .58;
-    transition: opacity .15s ease;
-}
-
-.scenarioform-scenario-order-item:hover .btn,
-.scenarioform-scenario-order-item:focus-within .btn {
-    opacity: 1;
-}
-
-.scenarioform-scenario-order-item:focus-within {
-    outline: 2px solid var(--sf-accent);
-    outline-offset: 1px;
 }
 
 .scenarioform-history-item {
@@ -1265,15 +1207,6 @@
         min-width: 680px;
     }
 
-    .scenarioform-scenario-order-item {
-        min-height: 52px;
-    }
-
-    .scenarioform-scenario-order-item .btn {
-        min-width: 40px;
-        min-height: 40px;
-        opacity: .82;
-    }
 
     .scenarioform-editor-actions {
         display: grid;
@@ -1473,3 +1406,8 @@
 .scenarioform-history-group-count { color: #596673; }
 .scenarioform-history-group-items { padding: 8px 12px; }
 .scenarioform-history-group-items[hidden] { display: none !important; }
+
+/* R119 : réorganisation discrète des requêtes (administrateurs uniquement). */
+.scenarioform-app:not(.scenarioform-user-mode) #div_scenarioformList .scenarioform-request { cursor: grab; }
+.scenarioform-app:not(.scenarioform-user-mode) #div_scenarioformList .scenarioform-request:active { cursor: grabbing; }
+#div_scenarioformList .scenarioform-request-dragging { opacity: .48; border-style: dashed; }
