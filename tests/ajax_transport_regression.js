@@ -1,0 +1,17 @@
+'use strict';
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
+const source = fs.readFileSync(__dirname + '/../desktop/js/scenarioform_helpers.js', 'utf8');
+let received = null;
+const returned = { done() { return this; }, fail() { return this; } };
+const context = vm.createContext({$: {ajax(options) { received = options; return returned; }}});
+vm.runInContext(source, context);
+const success = () => {};
+const error = () => {};
+const options = {type:'POST', url:'plugins/scenarioform/core/ajax/scenarioform.ajax.php', dataType:'json', data:{action:'getRequestList'}, success, error};
+assert.equal(context.scenarioformAjax(options), returned);
+assert.equal(received, options);
+assert.equal(received.success, success);
+assert.equal(received.error, error);
+console.log('Transport AJAX : options, callbacks et retour préservés');

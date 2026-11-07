@@ -1,0 +1,15 @@
+const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
+const php = fs.readFileSync(path.join(__dirname, '../core/ajax/scenarioform.ajax.php'), 'utf8');
+const start = php.indexOf("case 'createScenarioTemplate':");
+const end = php.indexOf("case 'getRequestDetail':", start);
+assert(start >= 0 && end > start, 'Action createScenarioTemplate absente');
+const action = php.slice(start, end);
+const guard = action.indexOf('count($form->getScenarios()) > 0');
+const create = action.indexOf('$scenario = scenarioform::createScenarioTemplate(');
+assert(guard >= 0 && guard < create, 'Le contrôle doit précéder la création du scénario');
+assert(action.includes('$form->syncScenarios([intval($scenario->getId())]);'), 'Association unique absente');
+assert(!action.includes('$scenarioIds[]'), 'Ancienne logique multiscénario encore présente');
+assert(action.includes('$scenario->remove()'), 'Nettoyage sur échec absent');
+console.log('Création de scénario modèle : contrôles statiques OK');

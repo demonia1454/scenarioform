@@ -90,9 +90,64 @@ $(function () {
 
 });
 
+var scenarioformRequestDragId = null;
+var scenarioformRequestDragMoved = false;
+
+function initRequestDragAndDrop() {
+    if (!window.scenarioformIsAdmin) return;
+    $('#div_scenarioformList .scenarioform-request').attr('draggable', 'true');
+}
+
+$(document).on('dragstart.scenarioform', '#div_scenarioformList .scenarioform-request', function (event) {
+    if (!window.scenarioformIsAdmin) return;
+    scenarioformRequestDragId = String($(this).attr('data-id'));
+    scenarioformRequestDragMoved = false;
+    event.originalEvent.dataTransfer.effectAllowed = 'move';
+    event.originalEvent.dataTransfer.setData('text/plain', scenarioformRequestDragId);
+    $(this).addClass('scenarioform-request-dragging');
+});
+$(document).on('dragover.scenarioform', '#div_scenarioformList .scenarioform-request', function (event) {
+    if (!window.scenarioformIsAdmin || !scenarioformRequestDragId) return;
+    event.preventDefault();
+    event.originalEvent.dataTransfer.dropEffect = 'move';
+    var source = $('#div_scenarioformList .scenarioform-request-dragging')[0];
+    if (!source || source === this) return;
+    var rect = this.getBoundingClientRect();
+    var after = event.originalEvent.clientY > rect.top + rect.height / 2;
+    if (after) $(this).after(source); else $(this).before(source);
+    scenarioformRequestDragMoved = true;
+});
+$(document).on('drop.scenarioform', '#div_scenarioformList .scenarioform-request', function (event) {
+    if (!window.scenarioformIsAdmin || !scenarioformRequestDragId) return;
+    event.preventDefault();
+    var moved = scenarioformRequestDragMoved;
+    scenarioformRequestDragId = null;
+    $('#div_scenarioformList .scenarioform-request').removeClass('scenarioform-request-dragging');
+    if (!moved) return;
+    var ids = $('#div_scenarioformList .scenarioform-request').map(function () {
+        return parseInt($(this).attr('data-id'), 10);
+    }).get();
+    scenarioformAjax({
+        type: 'POST', url: 'plugins/scenarioform/core/ajax/scenarioform.ajax.php',
+        data: {action: 'reorderRequests', requests: ids}, dataType: 'json'
+    }).done(function (data) {
+        if (data.state !== 'ok') {
+            jeedomUtils.showAlert({message: data.result || 'Ordre non enregistré', level: 'danger'});
+            loadRequestList();
+        }
+    }).fail(function () {
+        jeedomUtils.showAlert({message: 'Impossible de sauvegarder l’ordre des requêtes.', level: 'danger'});
+        loadRequestList();
+    });
+});
+$(document).on('dragend.scenarioform', '#div_scenarioformList .scenarioform-request', function () {
+    scenarioformRequestDragId = null;
+    $('#div_scenarioformList .scenarioform-request').removeClass('scenarioform-request-dragging');
+});
+
 function loadRequestList() {
 
-    $.ajax({
+    scenarioformAjax({
         type: 'POST',
         url: 'plugins/scenarioform/core/ajax/scenarioform.ajax.php',
         data: {
@@ -140,6 +195,7 @@ data.result.forEach(function (request) {
     `;
 });
             $('#div_scenarioformList').html(html);
+            initRequestDragAndDrop();
 
             // Accès direct depuis la WebApp mobile : sélection de la requête et du formulaire.
             var params = new URLSearchParams(window.location.search);
@@ -197,7 +253,7 @@ function loadRequestDetail(id, selectedFormId) {
         // Chargement détail requête
         // --------------------------------
 
-        $.ajax({
+        scenarioformAjax({
 
             type: 'POST',
 
@@ -358,6 +414,10 @@ function loadRequestDetail(id, selectedFormId) {
                             <button class="btn btn-default btn-sm scenarioform-mobile-admin-action"
                                     id="bt_editForm" disabled>
                                 <i class="fas fa-edit"></i> Modifier le formulaire
+                            </button>
+                            <button class="btn btn-warning btn-sm scenarioform-mobile-admin-action"
+                                    id="bt_openMoveForm" disabled>
+                                <i class="fas fa-exchange-alt"></i> Déplacer le formulaire
                             </button>
                             <button class="btn btn-danger btn-sm scenarioform-danger-action scenarioform-mobile-admin-action"
                                     id="bt_removeForm" disabled>
@@ -796,7 +856,7 @@ function loadRequestForm(requestId, formId)
 
             );
 
-            $('#bt_editForm, #bt_removeForm').prop('disabled', false);
+            $('#bt_editForm, #bt_removeForm, #bt_openMoveForm').prop('disabled', false);
 
 
             /*
@@ -914,7 +974,10 @@ $(document).on('click.scenarioform', '#bt_createScenarioTemplate', function() {
                         return;
                     }
 
-                    loadRequestForm(requestId, formId);
+                    // Recharger aussi la liste des formulaires : son libellé
+                    // « Aucun scénario » provient du détail de la requête.
+                    // Re-sélectionner le formulaire courant après ce chargement.
+                    loadRequestDetail(requestId, formId);
                     bootbox.dialog({
                         title: 'Scénario modèle créé',
                         message:
@@ -1248,7 +1311,7 @@ function showFormValues(formId, openHistory, scenarioId)
                                 field.name;
 
                             let configuration = field.configuration || {};
-                            let readonlyAttribute = configuration.initialVariable && configuration.variableMode === 'readonly' ? ' disabled aria-disabled="true"' : '';
+                            let readonlyAttribute = configuration.initialVariable && configuration.variableMode === 'readonly' ? ' disabled aria-disabled="true" data-scenarioform-variable-readonly="1"' : '';
                             let initialValue = field.initialValue !== undefined && field.initialValue !== null
                                 ? String(field.initialValue)
                                 : '';
@@ -1552,6 +1615,7 @@ function showFormValues(formId, openHistory, scenarioId)
                     scenarioformPendingReuseResponseId = null;
                     $('<button type="button" class="scenarioform-history-reuse" style="display:none;"></button>')
                         .attr('data-response-id', pendingResponseId)
+                        .data('scenarioform-refreshed', true)
                         .appendTo('#scenarioform-execute-zone')
                         .trigger('click')
                         .remove();
@@ -1657,64 +1721,7 @@ $(document).on('click.scenarioform', '.scenarioform-add-select-option', function
     });
 });
 
-function scenarioformEscapeHtml(value)
-{
-    return $('<div>').text(value == null ? '' : String(value)).html();
-}
-
-function scenarioformEscapeAttribute(value)
-{
-    return String(value == null ? '' : value)
-        .replace(/&/g, '&amp;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
-}
-
-function scenarioformBuildPlaceholder(field)
-{
-    let configuration = field.configuration || {};
-    let hasMin = configuration.min !== undefined && configuration.min !== '';
-    let hasMax = configuration.max !== undefined && configuration.max !== '';
-    let hasMinLength = configuration.minLength !== undefined && configuration.minLength !== '';
-    let hasMaxLength = configuration.maxLength !== undefined && configuration.maxLength !== '';
-
-    if (field.type === 'integer' || field.type === 'decimal') {
-        let kind = field.type === 'integer' ? 'Entier' : 'Nombre';
-        if (hasMin && hasMax) {
-            return kind + ' entre ' + configuration.min + ' et ' + configuration.max;
-        }
-        if (hasMin) {
-            return kind + ' supérieur ou égal à ' + configuration.min;
-        }
-        if (hasMax) {
-            return kind + ' inférieur ou égal à ' + configuration.max;
-        }
-        return field.type === 'integer' ? 'Saisissez un entier' : 'Ex. 12.50';
-    }
-
-    if (field.type === 'email') {
-        return 'nom@exemple.fr';
-    }
-
-    if (['text', 'textarea'].indexOf(field.type) !== -1) {
-        if (hasMinLength && hasMaxLength) {
-            return configuration.minLength + ' à ' + configuration.maxLength + ' caractères';
-        }
-        if (hasMinLength) {
-            return 'Au moins ' + configuration.minLength + ' caractères';
-        }
-        if (hasMaxLength) {
-            return configuration.maxLength + ' caractères maximum';
-        }
-        return field.required === true || field.required === 1 || field.required === '1'
-            ? 'Saisissez une valeur'
-            : '';
-    }
-
-    return '';
-}
+// Fonctions utilitaires communes chargees depuis scenarioform_helpers.js.
 
 function scenarioformValidateInput(field)
 {
@@ -1811,89 +1818,16 @@ function scenarioformValidateInput(field)
     return message === '' ? null : {label: label, message: message};
 }
 
-function renderFormScenarioEditor(available, selected)
-{
-    available = Array.isArray(available) ? available : [];
-    selected = Array.isArray(selected) ? selected : [];
+// renderFormScenarioEditor est defini dans scenarioform_forms.js.
 
-    let selectedIds = selected.map(function(item) { return String(item.id); });
-    let selectedById = {};
-    selected.forEach(function(item) { selectedById[String(item.id)] = item; });
-    let byId = {};
-    available.forEach(function(item) { byId[String(item.id)] = item; });
-
-    let ordered = selected.slice();
-    available.slice().sort(function(a, b) {
-        return String(a.name || '').localeCompare(String(b.name || ''), 'fr', {sensitivity: 'base'});
-    }).forEach(function(item) {
-        if (selectedIds.indexOf(String(item.id)) === -1) {
-            ordered.push(item);
-        }
-    });
-
-    let html = `
-        <div class="form-group">
-            <label>Scénarios associés à ce formulaire</label>
-            <p class="help-block">
-                Cochez les scénarios puis utilisez la poignée ou les boutons pour définir leur ordre.
-            </p>
-            <button type="button" class="btn btn-default btn-xs" id="bt_sortFormScenarios">
-                <i class="fas fa-sort-alpha-down"></i> Trier les scénarios A–Z
-            </button>
-            <div id="scenarioform-form-scenario-order" class="list-group">
-    `;
-
-    ordered.forEach(function(item) {
-        let checked = selectedIds.indexOf(String(item.id)) !== -1;
-        let selectedItem = selectedById[String(item.id)] || {};
-        let expectResult = !(['0', 'false', ''].includes(String(selectedItem.expect_result).toLowerCase()) || selectedItem.expect_result === false);
-        html += `
-            <div class="list-group-item scenarioform-scenario-order-item"
-                 draggable="true" data-scenario-id="${parseInt(item.id, 10)}">
-                <i class="fas fa-grip-vertical" aria-hidden="true"></i>
-                <label class="scenarioform-scenario-label">
-                    <input type="checkbox" class="form-scenario-enabled" ${checked ? 'checked' : ''}>
-                    ${scenarioformEscapeHtml(item.name)}
-                </label>
-                <label class="scenarioform-scenario-return-option">
-                    <input type="checkbox" class="form-scenario-expect-result" ${expectResult ? 'checked' : ''}>
-                    Attendre un retour métier
-                </label>
-                <span class="pull-right">
-                    <button type="button" class="btn btn-default btn-xs bt_scenario_up" title="Monter" aria-label="Monter ce scénario">
-                        <i class="fas fa-arrow-up"></i>
-                    </button>
-                    <button type="button" class="btn btn-default btn-xs bt_scenario_down" title="Descendre" aria-label="Descendre ce scénario">
-                        <i class="fas fa-arrow-down"></i>
-                    </button>
-                </span>
-            </div>
-        `;
-    });
-
-    return html + '</div></div>';
-}
-
-function collectFormScenarioIds()
-{
-    let ids = [];
-    $('#scenarioform-form-scenario-order .scenarioform-scenario-order-item').each(function() {
-        if ($(this).find('.form-scenario-enabled').prop('checked')) {
-            ids.push({
-                id: parseInt($(this).attr('data-scenario-id'), 10),
-                expect_result: $(this).find('.form-scenario-expect-result').prop('checked') ? 1 : 0
-            });
-        }
-    });
-    return ids;
-}
+// collectFormScenarioIds est defini dans scenarioform_forms.js.
 
 function loadFormEdit(formId)
 {
 
     $('#scenarioform-fields-management').hide();
 
-    $.ajax({
+    scenarioformAjax({
 
         type:'POST',
 
@@ -2092,47 +2026,13 @@ function saveRequest() {
 
 function saveForm() {
 
-    let formId =
-    $('#div_scenarioform-form')
-    .attr('data-form-id') || 0;
-
-
-    let action =
-        (formId == 0)
-        ? 'createForm'
-        : 'saveForm';
-
-
-
+    const formId = $('#div_scenarioform-form').attr('data-form-id') || 0;
+    const action = (formId == 0) ? 'createForm' : 'saveForm';
 
     $.ajax({
-
         type:'POST',
-
         url:'plugins/scenarioform/core/ajax/scenarioform.ajax.php',
-
-        data:{
-
-            action: action,
-
-            id: formId,
-
-            request_id:
-                $('#div_scenarioformEdition')
-                .data('request-id'),
-
-            name:
-                $('#edit_form_name').val(),
-
-            description:
-                $('#edit_form_description').val(),
-
-            history_title_field_id:
-                $('#edit_form_history_title_field').val() || 0,
-
-            scenarios: collectFormScenarioIds()
-
-        },
+        data: scenarioformCollectFormSaveData(formId, action),
 
         dataType:'json',
 
@@ -2500,7 +2400,7 @@ function loadFieldEdit(fieldId, formId, scenarioId)
                                placeholder="Ex. Chauffage_Pro">
                         <p class="help-block">
                             À l’ouverture normale du formulaire, le champ prend la valeur actuelle de cette variable.
-                            Une valeur restaurée depuis l’historique reste prioritaire.
+                            Lors de « Réutiliser ces valeurs », les champs en lecture seule conservent la valeur actuelle de Jeedom. Les autres champs reprennent les valeurs historiques.
                         </p>
                         <label for="edit_field_variable_mode">Utilisation de la variable</label>
                         <select class="form-control" id="edit_field_variable_mode">
@@ -2852,46 +2752,7 @@ function loadFieldEdit(fieldId, formId, scenarioId)
                 * ======================================
                 */
 
-                $('#bt_saveField')
-                    .off('click')
-                    .on(
-                        'click',
-                        function()
-                        {
-
-                            saveField(
-
-                                $(this)
-                                    .attr('data-id'),
-
-                                $(this)
-                                    .attr('data-form')
-
-                            );
-
-                        }
-                    );
-
-
-                /*
-                * ======================================
-                * BOUTON RETOUR
-                * ======================================
-                */
-
-                $('#bt_cancelField')
-                    .off('click')
-                    .on(
-                        'click',
-                        function()
-                        {
-
-                            loadFieldList(
-                                formId
-                            );
-
-                        }
-                    );
+                scenarioformBindFieldEditorEvents(formId);
 
 
             },
@@ -3029,282 +2890,6 @@ $.ajax({
 });
 
 
-}
-
-function renderFields(fields) {
-
-    let html = '';
-
-
-    /*
-     * Affichage de la liste des champs
-     */
-
-    if (fields.length === 0) {
-
-        html += `
-            <div class="alert alert-info">
-                Aucun champ.
-            </div>
-        `;
-
-    } else {
-
-        html += `
-            <div class="table-responsive">
-            <table class="table table-condensed scenarioform-fields-table">
-
-                <thead>
-                    <tr>
-                        <th>Ordre</th>
-                        <th>Label</th>
-                        <th>Type</th>
-                        <th>Tag</th>
-                        <th>Obligatoire</th>
-                        <th></th>
-                    </tr>
-                </thead>
-
-                <tbody>
-        `;
-
-
-        fields.forEach(function(field) {
-
-            let typeLabels = {
-                text: 'Texte',
-                textarea: 'Texte long',
-                integer: 'Nombre entier',
-                decimal: 'Nombre décimal',
-                select: 'Liste de choix',
-                email: 'Adresse e-mail',
-                date: 'Date',
-                time: 'Heure',
-                datetime: 'Date et heure',
-                boolean: 'Booléen'
-            };
-
-            html += `
-                <tr data-id="${field.id}"
-                    data-field-label="${scenarioformEscapeHtml(field.label)}">
-
-                    <td>
-                        ${field.displayOrder}
-                    </td>
-
-                    <td>
-                        ${scenarioformEscapeHtml(field.label)}
-                    </td>
-
-                    <td>
-                        ${scenarioformEscapeHtml(typeLabels[field.type] || field.type)}
-                    </td>
-
-                    <td>
-                        <code>${scenarioformEscapeHtml(field.name)}</code>
-                    </td>
-
-                    <td>
-                    ${field.required === 1 || field.required === '1' ? '✓' : '—'}
-                    </td>
-
-                    <td class="text-right">
-
-                        <a class="btn btn-xs btn-default bt_editField">
-
-                            <i class="fas fa-edit"></i>
-
-                        </a>
-
-                        <a class="btn btn-xs btn-danger bt_removeField">
-
-                            <i class="fas fa-trash"></i>
-
-                        </a>
-
-                    </td>
-
-                </tr>
-            `;
-
-        });
-
-
-        html += `
-                </tbody>
-
-            </table>
-            </div>
-        `;
-
-    }
-
-
-
-    /*
-     * Injection de la liste
-     */
-
-    $('#scenarioform-fields-list').html(html);
-
-
-
-    // -------------------------
-    // Modification variable
-    // -------------------------
-
-    $('#scenarioform-fields-list')
-        .off('click', '.bt_editField')
-        .on('click', '.bt_editField', function() {
-
-            let fieldId = $(this)
-                .closest('tr')
-                .data('id');
-
-            let fieldLabel = $(this)
-                .closest('tr')
-                .attr('data-field-label') || ('#' + fieldId);
-
-            let formId = $('#div_scenarioform-form')
-                .attr('data-form-id');
-
-
-
-
-            loadFieldEdit(
-                fieldId,
-                formId
-            );
-
-        });
-
-
-
-    // -------------------------
-    // Suppression variable
-    // -------------------------
-
-    $('#scenarioform-fields-list')
-        .off('click', '.bt_removeField')
-        .on('click', '.bt_removeField', function() {
-
-            let fieldId = $(this)
-                .closest('tr')
-                .data('id');
-
-            let fieldLabel = $(this)
-                .closest('tr')
-                .attr('data-field-label') || ('#' + fieldId);
-
-
-
-
-            bootbox.confirm(
-                'Supprimer le champ « ' + scenarioformEscapeHtml(fieldLabel) + ' » ? ' +
-                'Les valeurs enregistrées pour ce champ seront également supprimées.',
-                function(result) {
-
-                    if (!result) {
-                        return;
-                    }
-
-
-                    $.ajax({
-
-                        type: 'POST',
-
-                        url: 'plugins/scenarioform/core/ajax/scenarioform.ajax.php',
-
-                        data: {
-
-                            action: 'removeField',
-
-                            id: fieldId
-
-                        },
-
-                        dataType: 'json',
-
-
-                        success: function(data) {
-
-
-
-                            if (data.state !== 'ok') {
-
-                                jeedomUtils.showAlert({
-
-                                    message: data.result,
-
-                                    level: 'danger'
-
-                                });
-
-                                return;
-
-                            }
-
-
-                            let formId =
-                                $('#div_scenarioform-form')
-                                    .attr('data-form-id');
-
-
-                            loadFieldList(formId);
-
-                        },
-
-
-                        error: function(xhr) {
-
-
-                        }
-
-                    });
-
-                }
-
-            );
-
-        });
-
-}
-
-function loadFieldList(formId, scenarioId)
-{
-    $.ajax({
-
-        type:'POST',
-
-        url:'plugins/scenarioform/core/ajax/scenarioform.ajax.php',
-
-        data:{
-            action:'getFieldList',
-            form_id:formId,
-            scenario_id: scenarioId || parseInt($('#scenarioform-field-scenario').val(), 10)
-        },
-
-        dataType:'json',
-
-        success:function(data){
-
-            if(data.state !== 'ok'){
-
-                jeedomUtils.showAlert({
-                    message:data.result,
-                    level:'danger'
-                });
-
-                return;
-            }
-
-            let fields = Array.isArray(data.result) ? data.result : [];
-            renderFields(fields);
-            scenarioformRefreshTemplateButton(fields.length);
-
-        }
-
-    });
 }
 
 function scenarioformRefreshTemplateButton(fieldCount)
@@ -3942,7 +3527,7 @@ $(document).on('click.scenarioform', '.scenarioform-request',
 $(document).on('click.scenarioform', '#bt_createForm',
 function(){
 
-    $('#bt_editForm, #bt_removeForm').prop('disabled', true);
+    $('#bt_editForm, #bt_removeForm, #bt_openMoveForm').prop('disabled', true);
 
 
     $('#div_scenarioform-form')
@@ -4000,7 +3585,7 @@ function(){
     $('#div_scenarioform-form')
         .html(html);
 
-    $.ajax({
+    scenarioformAjax({
         type: 'POST',
         url: 'plugins/scenarioform/core/ajax/scenarioform.ajax.php',
         data: { action: 'getScenarioList' },
@@ -4039,7 +3624,7 @@ function saveFormOrder() {
         formIds.push(parseInt($(this).attr('data-form-id'), 10));
     });
 
-    $.ajax({
+    scenarioformAjax({
         type: 'POST',
         url: 'plugins/scenarioform/core/ajax/scenarioform.ajax.php',
         data: {action: 'reorderForms', request_id: requestId, forms: formIds},
@@ -4049,9 +3634,7 @@ function saveFormOrder() {
                 jeedomUtils.showAlert({message: data.result, level: 'danger'});
             }
         },
-        error: function() {
-            jeedomUtils.showAlert({message: 'Impossible de sauvegarder l\'ordre des formulaires.', level: 'danger'});
-        }
+        error: scenarioformAjaxAlertError('Impossible de sauvegarder l\'ordre des formulaires.')
     });
 }
 
@@ -4097,48 +3680,6 @@ $(document).on('dragend.scenarioform', '.scenarioform-form-choice', function() {
     scenarioformDraggedForm = null;
 });
 
-$(document).on('click.scenarioform', '.bt_scenario_up', function() {
-    let item = $(this).closest('.scenarioform-scenario-order-item');
-    let previous = item.prev('.scenarioform-scenario-order-item');
-    if (previous.length) {
-        item.insertBefore(previous);
-    }
-});
-
-$(document).on('click.scenarioform', '.bt_scenario_down', function() {
-    let item = $(this).closest('.scenarioform-scenario-order-item');
-    let next = item.next('.scenarioform-scenario-order-item');
-    if (next.length) {
-        item.insertAfter(next);
-    }
-});
-
-$(document).on('click.scenarioform', '#bt_sortFormScenarios', function() {
-    let list = $('#scenarioform-form-scenario-order');
-    list.children('.scenarioform-scenario-order-item').sort(function(a, b) {
-        let aName = $(a).find('.scenarioform-scenario-label').text().trim();
-        let bName = $(b).find('.scenarioform-scenario-label').text().trim();
-        return aName.localeCompare(bName, 'fr', {sensitivity: 'base'});
-    }).appendTo(list);
-});
-
-var scenarioformDraggedScenario = null;
-$(document).on('dragstart.scenarioform', '.scenarioform-scenario-order-item', function(event) {
-    scenarioformDraggedScenario = this;
-    event.originalEvent.dataTransfer.effectAllowed = 'move';
-});
-$(document).on('dragover.scenarioform', '.scenarioform-scenario-order-item', function(event) {
-    event.preventDefault();
-    event.originalEvent.dataTransfer.dropEffect = 'move';
-});
-$(document).on('drop.scenarioform', '.scenarioform-scenario-order-item', function(event) {
-    event.preventDefault();
-    if (scenarioformDraggedScenario && scenarioformDraggedScenario !== this) {
-        $(scenarioformDraggedScenario).insertBefore(this);
-    }
-    scenarioformDraggedScenario = null;
-});
- 
 $(document).on('click.scenarioform', '#bt_editForm',
     function(){
 
@@ -4164,6 +3705,28 @@ $(document).on('click.scenarioform', '#bt_backForm',
     }
 );
 
+// La liste est un choix provisoire : seule une validation explicite change l'association.
+$(document).on('change.scenarioform', '#scenarioform-main-scenario', function() {
+    const selected = String($(this).val() || '');
+    const confirmed = String($(this).attr('data-confirmed-id') || '');
+    $('#bt_confirmFormScenario').prop('disabled', selected === confirmed);
+});
+
+$(document).on('click.scenarioform', '#bt_confirmFormScenario', function() {
+    const select = $('#scenarioform-main-scenario');
+    const selected = String(select.val() || '');
+    const confirmed = String(select.attr('data-confirmed-id') || '');
+    if (selected === confirmed) return;
+    if (confirmed && !window.confirm('Remplacer le scénario associé ? Les champs existants seront transférés vers le nouveau scénario.')) {
+        select.val(confirmed).trigger('change');
+        return;
+    }
+    select.attr('data-confirmed-id', selected);
+    $('#bt_confirmFormScenario').prop('disabled', true);
+    // L'enregistrement normal conserve le transfert existant des champs.
+    saveForm();
+});
+
 $(document).on('click.scenarioform', '#bt_saveForm',
     function(){
 
@@ -4171,6 +3734,90 @@ $(document).on('click.scenarioform', '#bt_saveForm',
 
     }
 );
+
+// Déplacement accessible depuis la barre d'actions de la liste des formulaires.
+$(document).on('click.scenarioform', '#bt_openMoveForm', function() {
+    const formId = parseInt($('#div_scenarioform-form').attr('data-form-id'), 10);
+    const sourceId = parseInt($('#div_scenarioformEdition').data('request-id'), 10);
+    if (!formId || !sourceId) {
+        jeedomUtils.showAlert({ message: 'Sélectionnez d’abord un formulaire.', level: 'warning' });
+        return;
+    }
+    const dialog = bootbox.dialog({
+        title: 'Déplacer le formulaire',
+        message: '<div class="form-group"><label for="scenarioform-move-destination">Requête de destination</label>' +
+            '<select class="form-control" id="scenarioform-move-destination" disabled>' +
+            '<option value="">Chargement des requêtes...</option></select></div>' +
+            '<p class="help-block">Le formulaire conserve son identifiant, ses champs et son historique.</p>',
+        buttons: {
+            cancel: { label: 'Annuler', className: 'btn-default' },
+            move: {
+                label: 'Déplacer le formulaire', className: 'btn-warning',
+                callback: function() {
+                    const destinationId = parseInt(dialog.find('#scenarioform-move-destination').val(), 10);
+                    const destinationName = dialog.find('#scenarioform-move-destination option:selected').text();
+                    if (!destinationId || destinationId === sourceId) {
+                        jeedomUtils.showAlert({ message: 'Choisissez une autre requête.', level: 'warning' });
+                        return false;
+                    }
+                    bootbox.confirm('Déplacer ce formulaire vers « ' + scenarioformEscapeHtml(destinationName) +
+                        ' » ? Son identifiant et son historique seront conservés.', function(confirmed) {
+                        if (!confirmed) return;
+                        $.ajax({
+                            type: 'POST',
+                            url: 'plugins/scenarioform/core/ajax/scenarioform.ajax.php',
+                            dataType: 'json',
+                            data: { action: 'moveForm', id: formId, source_request_id: sourceId,
+                                destination_request_id: destinationId },
+                            success: function(response) {
+                                if (response.state !== 'ok') {
+                                    jeedomUtils.showAlert({ message: response.result, level: 'danger' });
+                                    return;
+                                }
+                                jeedomUtils.showAlert({ message: 'Formulaire déplacé ; historique conservé.', level: 'success' });
+                                loadRequestList();
+                                loadRequestDetail(destinationId, formId);
+                            },
+                            error: function() {
+                                jeedomUtils.showAlert({ message: 'Erreur réseau lors du déplacement.', level: 'danger' });
+                            }
+                        });
+                    });
+                }
+            }
+        }
+    });
+    const moveButton = dialog.find('.modal-footer .btn-warning');
+    moveButton.prop('disabled', true);
+    $.ajax({
+        type: 'POST',
+        url: 'plugins/scenarioform/core/ajax/scenarioform.ajax.php',
+        data: { action: 'getRequestList' },
+        dataType: 'json',
+        success: function(response) {
+            if (response.state !== 'ok' || !Array.isArray(response.result)) {
+                dialog.find('#scenarioform-move-destination').html('<option value="">Requêtes indisponibles</option>');
+                return;
+            }
+            const choices = response.result.filter(function(request) {
+                return parseInt(request.id, 10) !== sourceId;
+            });
+            dialog.find('#scenarioform-move-destination').html(
+                '<option value="">Choisir une requête de destination</option>' +
+                choices.map(function(request) {
+                    return '<option value="' + parseInt(request.id, 10) + '">' +
+                        scenarioformEscapeHtml(request.name) + '</option>';
+                }).join('')
+            ).prop('disabled', choices.length === 0);
+            dialog.find('#scenarioform-move-destination').on('change', function() {
+                moveButton.prop('disabled', !parseInt($(this).val(), 10));
+            });
+        },
+        error: function() {
+            dialog.find('#scenarioform-move-destination').html('<option value="">Requêtes indisponibles</option>');
+        }
+    });
+});
 
 $(document).on('click.scenarioform', '#bt_removeForm',
     function(){
@@ -7019,7 +6666,10 @@ $(document).on('click.scenarioform', '.scenarioform-history-reuse',
                 return;
             }
 
-            if ($('#scenarioform-execute-zone .scenarioform-entry-fields').length === 0) {
+            // Toujours recharger les champs depuis Jeedom avant de reprendre
+            // l'historique : les variables en lecture seule peuvent avoir évolué.
+            // Le clic interne après rechargement porte un marqueur anti-boucle.
+            if (!$(this).data('scenarioform-refreshed')) {
                 scenarioformPendingReuseResponseId = responseId;
                 let formId = $('#div_scenarioform-form').attr('data-form-id');
                 showFormValues(formId, false);
@@ -7042,6 +6692,10 @@ $(document).on('click.scenarioform', '.scenarioform-history-reuse',
                 .each(function() {
 
                     var field = $(this);
+
+                    if (field.attr('data-scenarioform-variable-readonly') === '1') {
+                        return;
+                    }
 
                     if (field.attr('type') === 'checkbox') {
 
@@ -7138,6 +6792,12 @@ $(document).on('click.scenarioform', '.scenarioform-history-reuse',
                         return;
                     }
 
+
+                    // Une valeur historique ne remplace pas la valeur Jeedom actuelle.
+                    field = field.filter(function() {
+                        return $(this).attr('data-scenarioform-variable-readonly') !== '1';
+                    });
+                    if (!field.length) return;
 
                     var fieldType =
                         field.attr('type') ||

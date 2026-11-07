@@ -5,10 +5,9 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 
-const source = fs.readFileSync(
-    path.join(__dirname, '..', 'desktop', 'js', 'scenarioform.js'),
-    'utf8'
-);
+const source = ['scenarioform_helpers.js', 'scenarioform.js'].map(file =>
+    fs.readFileSync(path.join(__dirname, '..', 'desktop', 'js', file), 'utf8')
+).join('\n');
 
 function extractFunction(name) {
     const start = source.indexOf('function ' + name + '(');
