@@ -1,0 +1,10 @@
+ScenarioForm v2.2-beta3-r113 — Intégration mobile Jeedom 4.6.2
+
+- mobile/html/scenarioform.html ajouté comme point d'entrée attendu par Jeedom.
+- mobile/js/scenarioform.js extrait de la page r112.
+- info.json : mobile = scenarioform (chaîne et non booléen).
+- displayMobilePanel activé par défaut seulement si aucune préférence enregistrée.
+- Correctif d'authentification HTTPS r111 conservé.
+- Les formulaires s'ouvrent dans la vue desktop existante.
+
+Version de test non officielle ; sauvegarder Jeedom avant installation.

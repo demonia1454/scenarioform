@@ -1,0 +1,2 @@
+Correctif du tri : le choix de tri est conservé lors des réouvertures du même historique dans la session, y compris après modification/suppression. Changement de formulaire : tri configuré par défaut.
+La suppression sans code de réservation n'est PAS implémentée : elle nécessite une vérification fiable de l'absence de lien calendrier et des scénarios 107/108. Ne pas installer cette archive en production sans satisfaire ATTENTION_LIRE_AVANT_INSTALLATION.txt.

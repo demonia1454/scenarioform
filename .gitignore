@@ -22,3 +22,4 @@ Thumbs.db
 node_modules/
 vendor/
 coverage/
+rangement-depot-devnotes.patch

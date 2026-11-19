@@ -1,0 +1,6 @@
+ScenarioForm v2.2-beta3-r109 — correctif de développement
+Le bouton Historique regroupe les requêtes par valeur du champ lorsque le tri actif est un tri de champ.
+Voir/Fermer affiche ou masque les réponses du groupe, sans modifier le tri ni les données.
+Les tris par date et numéro restent en affichage non regroupé.
+Tests : syntaxe JavaScript et validation_regression.js réussis ; aucune validation réelle Jeedom.
+ATTENTION : lire ATTENTION_LIRE_AVANT_INSTALLATION.txt avant toute installation ; préconditions scénarios 107/108 inchangées.
