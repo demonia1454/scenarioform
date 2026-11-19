@@ -1,0 +1,94 @@
+--- a/core/ajax/scenarioform.ajax.php	2026-11-19 14:18:39.419115184 +0000
++++ b/core/ajax/scenarioform.ajax.php	2026-11-19 14:17:56.873124987 +0000
+@@ -8,21 +8,9 @@
+ include_file('core', 'authentification', 'php');
+ 
+ // Ne pas dépendre de l'ordre d'autoload de Jeedom juste après l'installation.
+-// Certaines versions ne découvrent pas encore les classes du plugin lors du
+-// premier affichage, ce qui provoque notamment "scenarioformRequest not found".
+-$scenarioformClassDirectory = dirname(__FILE__) . '/../class/';
+-foreach ([
+-    'scenarioformRequest',
+-    'scenarioformRequestScenario',
+-    'scenarioformForm',
+-    'scenarioformFormScenario',
+-    'scenarioformField',
+-    'scenarioformResponse',
+-    'scenarioformResponseValue',
+-    'scenarioform'
+-] as $scenarioformClassName) {
+-    require_once $scenarioformClassDirectory . $scenarioformClassName . '.class.php';
+-}
++// Chargement centralisé : voir core/php/scenarioform_loader.inc.php
++require_once dirname(__FILE__) . '/../php/scenarioform_loader.inc.php';
++scenarioform_load_plugin_classes();
+ 
+ 
+ 
+--- a/plugin_info/install.php	2026-11-19 14:18:39.676115125 +0000
++++ b/plugin_info/install.php	2026-11-19 14:18:02.232123752 +0000
+@@ -1,26 +1,12 @@
+ <?php
+ 
+ /**
+- * Charge explicitement les classes du plugin pendant les hooks d'installation.
++ * Chargement centralisé des classes du plugin :
++ * voir core/php/scenarioform_loader.inc.php.
+  * L'autoload Jeedom peut ne pas encore les connaître lors d'une installation
+  * fraîche ou immédiatement après la mise à jour des fichiers.
+  */
+-function scenarioform_load_plugin_classes(): void
+-{
+-    $classDirectory = dirname(__FILE__) . '/../core/class/';
+-    foreach ([
+-        'scenarioformRequest',
+-        'scenarioformRequestScenario',
+-        'scenarioformForm',
+-        'scenarioformFormScenario',
+-        'scenarioformField',
+-        'scenarioformResponse',
+-        'scenarioformResponseValue',
+-        'scenarioform'
+-    ] as $className) {
+-        require_once $classDirectory . $className . '.class.php';
+-    }
+-}
++require_once dirname(__FILE__) . '/../core/php/scenarioform_loader.inc.php';
+ 
+ function scenarioform_run_queries(array $queries): void
+ {
+
+diff --git a/core/php/scenarioform_loader.inc.php b/core/php/scenarioform_loader.inc.php
+new file mode 100644
+--- /dev/null
++++ b/core/php/scenarioform_loader.inc.php
+@@ -0,0 +1,29 @@
++<?php
++
++/**
++ * Chargeur unique des classes du plugin ScenarioForm.
++ *
++ * L'autoload Jeedom peut ne pas encore connaître les classes du plugin
++ * (installation fraîche, mise à jour des fichiers, premier affichage),
++ * ce qui provoquait notamment « scenarioformRequest not found ».
++ * Ce fichier centralise la liste des classes, utilisée à la fois par
++ * l'entrée AJAX et par les hooks d'installation.
++ */
++if (!function_exists('scenarioform_load_plugin_classes')) {
++    function scenarioform_load_plugin_classes(): void
++    {
++        $classDirectory = dirname(__FILE__) . '/../class/';
++        foreach ([
++            'scenarioformRequest',
++            'scenarioformRequestScenario',
++            'scenarioformForm',
++            'scenarioformFormScenario',
++            'scenarioformField',
++            'scenarioformResponse',
++            'scenarioformResponseValue',
++            'scenarioform'
++        ] as $className) {
++            require_once $classDirectory . $className . '.class.php';
++        }
++    }
++}
